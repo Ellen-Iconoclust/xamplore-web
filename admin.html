@@ -3,768 +3,611 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Secure Exam</title>
+    <title>Admin Dashboard - Secure Exam Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .blur-overlay {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        .status-terminated { background-color: #fee2e2; color: #991b1b; }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Admin Login</h2>
-                <p class="text-gray-600">Enter password to access dashboard</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+                <p class="text-gray-600">Enter password to continue</p>
             </div>
             
             <form id="loginForm" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                    <input type="password" id="adminPassword" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Enter admin password">
+                    <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                        Admin Password
+                    </label>
+                    <input 
+                        type="password" 
+                        id="adminPassword" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        placeholder="Enter admin password"
+                    >
                 </div>
                 
-                <button type="submit" 
-                        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <i class="fas fa-lock mr-2"></i>Login
+                <button 
+                    type="submit"
+                    id="loginBtn"
+                    class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                >
+                    Login
                 </button>
             </form>
             
-            <div class="mt-6 text-center text-sm text-gray-500">
-                <p>Default password: ExamAdmin2024</p>
-                <p class="mt-2">Change password in firebase-config.js</p>
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-500 text-center">
+                    Default password: <code class="bg-gray-100 px-2 py-1 rounded">test123</code>
+                </p>
             </div>
         </div>
     </div>
-
-    <!-- Main Dashboard -->
+    
+    <!-- Main Admin Dashboard -->
     <div id="dashboard" class="hidden">
-        <!-- Header -->
-        <header class="bg-white shadow">
+        <div class="bg-white shadow">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-6">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Exam Admin Dashboard</h1>
-                        <p class="text-gray-600">Monitor exam attempts in real-time</p>
+                        <p class="text-gray-600">Monitor all exam attempts in real-time</p>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <button id="resetPasswordBtn" 
-                                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                            Change Password
+                        <button 
+                            id="refreshBtn"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Refresh
                         </button>
-                        <button id="logoutBtn" 
-                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        <button 
+                            id="logoutBtn"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition"
+                        >
+                            Logout
                         </button>
                     </div>
                 </div>
             </div>
-        </header>
-
-        <!-- Stats -->
+        </div>
+        
+        <!-- Stats Overview -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow p-6">
+                <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-blue-100 p-3 rounded-lg">
-                            <i class="fas fa-users text-blue-600 text-2xl"></i>
+                        <div class="flex-shrink-0">
+                            <div class="p-3 bg-blue-100 rounded-lg">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-4.201V5a2 2 0 00-2-2H4a2 2 0 00-2 2v14a2 2 0 002 2h16a2 2 0 002-2V7.5z" />
+                                </svg>
+                            </div>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Total Attempts</p>
-                            <p class="text-2xl font-bold text-gray-900" id="totalAttempts">0</p>
+                            <p id="totalAttempts" class="text-2xl font-semibold text-gray-900">0</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow p-6">
+                <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-green-100 p-3 rounded-lg">
-                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        <div class="flex-shrink-0">
+                            <div class="p-3 bg-green-100 rounded-lg">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Completed</p>
-                            <p class="text-2xl font-bold text-gray-900" id="completedAttempts">0</p>
+                            <p id="completedAttempts" class="text-2xl font-semibold text-gray-900">0</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow p-6">
+                <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-red-100 p-3 rounded-lg">
-                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                        <div class="flex-shrink-0">
+                            <div class="p-3 bg-red-100 rounded-lg">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Terminated</p>
-                            <p class="text-2xl font-bold text-gray-900" id="terminatedAttempts">0</p>
+                            <p id="terminatedAttempts" class="text-2xl font-semibold text-gray-900">0</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow p-6">
+                <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 bg-yellow-100 p-3 rounded-lg">
-                            <i class="fas fa-chart-bar text-yellow-600 text-2xl"></i>
+                        <div class="flex-shrink-0">
+                            <div class="p-3 bg-purple-100 rounded-lg">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Avg Score</p>
-                            <p class="text-2xl font-bold text-gray-900" id="avgScore">0%</p>
+                            <p class="text-sm font-medium text-gray-600">Today's Attempts</p>
+                            <p id="todayAttempts" class="text-2xl font-semibold text-gray-900">0</p>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Filters -->
-            <div class="bg-white rounded-xl shadow p-6 mb-8">
-                <div class="flex flex-wrap gap-4">
+            
+            <!-- Controls -->
+            <div class="bg-white rounded-lg shadow p-6 mb-8">
+                <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="all">All Status</option>
-                            <option value="completed">Completed</option>
-                            <option value="terminated">Terminated</option>
-                        </select>
+                        <h3 class="text-lg font-medium text-gray-900">Attempt Management</h3>
+                        <p class="text-sm text-gray-600">Reset attempts or allow reattempts</p>
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Pattern</label>
-                        <select id="patternFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="all">All Patterns</option>
-                            <option value="A">Pattern A</option>
-                            <option value="B">Pattern B</option>
-                            <option value="C">Pattern C</option>
-                        </select>
+                    <div class="flex flex-wrap gap-3">
+                        <button 
+                            id="resetAllBtn"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Reset All Attempts
+                        </button>
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                        <input type="date" id="dateFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
-                    </div>
-                    
-                    <div class="flex items-end">
-                        <button id="resetFilters" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                            Reset Filters
+                </div>
+                
+                <div class="mt-4">
+                    <label for="studentSearch" class="block text-sm font-medium text-gray-700 mb-2">
+                        Reset Specific Student
+                    </label>
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="studentSearch"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Enter student name"
+                        >
+                        <button 
+                            id="resetStudentBtn"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition"
+                        >
+                            Reset Student
                         </button>
                     </div>
                 </div>
             </div>
-
+            
             <!-- Attempts Table -->
-            <div class="bg-white rounded-xl shadow overflow-hidden">
-                <div class="px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800">Exam Attempts</h2>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">All Exam Attempts</h3>
+                    <p class="text-sm text-gray-600">Sorted by most recent</p>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Student Name
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Student
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Pattern
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Score
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Start Time
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date & Time
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Duration
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
                         <tbody id="attemptsTableBody" class="bg-white divide-y divide-gray-200">
-                            <!-- Data will be populated here -->
+                            <!-- Attempts will be loaded here -->
                         </tbody>
                     </table>
                 </div>
                 
-                <div class="px-6 py-4 border-t flex justify-between items-center">
-                    <div class="text-sm text-gray-600">
-                        Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> attempts
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="prevPage" class="px-3 py-1 border rounded disabled:opacity-50">Previous</button>
-                        <span class="px-3 py-1">Page <span id="currentPage">1</span></span>
-                        <button id="nextPage" class="px-3 py-1 border rounded disabled:opacity-50">Next</button>
-                    </div>
+                <div class="px-6 py-4 border-t border-gray-200 text-center">
+                    <p id="noAttemptsMessage" class="text-gray-500">No attempts found</p>
                 </div>
             </div>
-
-            <!-- Daily Attempts Management -->
-            <div class="mt-8 bg-white rounded-xl shadow overflow-hidden">
-                <div class="px-6 py-4 border-b flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">Daily Attempts Control</h2>
-                    <button id="refreshDaily" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+            
+            <!-- Data Export -->
+            <div class="mt-8 bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Export Data</h3>
+                        <p class="text-sm text-gray-600">Export all attempts as JSON</p>
+                    </div>
+                    <button 
+                        id="exportBtn"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Export JSON
                     </button>
-                </div>
-                
-                <div class="p-6">
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-800 mb-4">Reset Attempt for Student</h3>
-                        <div class="flex gap-4">
-                            <input type="text" id="resetStudentName" 
-                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                                   placeholder="Enter student name">
-                            <input type="date" id="resetDate" 
-                                   class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <button id="resetAttemptBtn" 
-                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                Reset Attempt
-                            </button>
-                        </div>
-                        <p class="mt-2 text-sm text-gray-500">This will allow the student to take the exam again on the selected date.</p>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student Name
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Date
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Time
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="dailyAttemptsBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Daily attempts will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detail Modal -->
-        <div id="detailModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="px-6 py-4 border-b flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">Attempt Details</h2>
-                    <button id="closeDetailModal" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-                <div class="p-6">
-                    <div id="detailContent">
-                        <!-- Details will be loaded here -->
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK and Admin Script -->
     <script type="module">
-        import { firebaseConfig, ADMIN_PASSWORD } from './firebase-config.js';
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-        import { getFirestore, collection, query, orderBy, onSnapshot, deleteDoc, doc, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // DOM Elements
-        const loginModal = document.getElementById('loginModal');
-        const dashboard = document.getElementById('dashboard');
-        const loginForm = document.getElementById('loginForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const attemptsTableBody = document.getElementById('attemptsTableBody');
-        const dailyAttemptsBody = document.getElementById('dailyAttemptsBody');
-        const detailModal = document.getElementById('detailModal');
-        const closeDetailModal = document.getElementById('closeDetailModal');
-        const resetAttemptBtn = document.getElementById('resetAttemptBtn');
-        const refreshDaily = document.getElementById('refreshDaily');
-
-        // State
-        let allAttempts = [];
-        let dailyAttempts = [];
-        let currentFilters = {};
-        let currentPage = 1;
-        const itemsPerPage = 10;
-
-        // Login
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const password = document.getElementById('adminPassword').value;
-            
-            if (password === ADMIN_PASSWORD) {
-                loginModal.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-                loadAttempts();
-                loadDailyAttempts();
-            } else {
-                alert('Incorrect password!');
-            }
-        });
-
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            dashboard.classList.add('hidden');
-            loginModal.classList.remove('hidden');
-            document.getElementById('adminPassword').value = '';
-        });
-
-        // Close detail modal
-        closeDetailModal.addEventListener('click', () => {
-            detailModal.classList.add('hidden');
-        });
-
-        // Load attempts from Firestore
-        function loadAttempts() {
-            const attemptsRef = collection(db, 'attempts');
-            const q = query(attemptsRef, orderBy('timestamp', 'desc'));
-            
-            onSnapshot(q, (snapshot) => {
-                allAttempts = [];
-                snapshot.forEach((doc) => {
-                    allAttempts.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
+        import { ATTEMPTS, ADMIN_PASSWORD_HASH, getAllAttempts, resetAllAttempts, resetStudentAttempts } from './questions.js';
+        
+        class AdminDashboard {
+            constructor() {
+                this.isAuthenticated = false;
+                this.refreshInterval = null;
                 
-                updateStats();
-                renderTable();
-            });
-        }
-
-        // Load daily attempts
-        async function loadDailyAttempts() {
-            const dailyRef = collection(db, 'daily_attempts');
-            const snapshot = await getDocs(dailyRef);
+                this.initializeElements();
+                this.bindEvents();
+                this.checkAuth();
+            }
             
-            dailyAttempts = [];
-            snapshot.forEach((doc) => {
-                dailyAttempts.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
+            initializeElements() {
+                this.loginScreen = document.getElementById('loginScreen');
+                this.dashboard = document.getElementById('dashboard');
+                this.loginForm = document.getElementById('loginForm');
+                this.adminPasswordInput = document.getElementById('adminPassword');
+                this.loginBtn = document.getElementById('loginBtn');
+                this.logoutBtn = document.getElementById('logoutBtn');
+                this.refreshBtn = document.getElementById('refreshBtn');
+                this.resetAllBtn = document.getElementById('resetAllBtn');
+                this.resetStudentBtn = document.getElementById('resetStudentBtn');
+                this.studentSearch = document.getElementById('studentSearch');
+                this.exportBtn = document.getElementById('exportBtn');
+                
+                this.attemptsTableBody = document.getElementById('attemptsTableBody');
+                this.noAttemptsMessage = document.getElementById('noAttemptsMessage');
+                
+                this.totalAttempts = document.getElementById('totalAttempts');
+                this.completedAttempts = document.getElementById('completedAttempts');
+                this.terminatedAttempts = document.getElementById('terminatedAttempts');
+                this.todayAttempts = document.getElementById('todayAttempts');
+            }
             
-            renderDailyAttempts();
-        }
-
-        // Update statistics
-        function updateStats() {
-            const total = allAttempts.length;
-            const completed = allAttempts.filter(a => a.status === 'completed').length;
-            const terminated = allAttempts.filter(a => a.status === 'terminated').length;
+            bindEvents() {
+                this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                this.logoutBtn.addEventListener('click', () => this.handleLogout());
+                this.refreshBtn.addEventListener('click', () => this.loadAttempts());
+                this.resetAllBtn.addEventListener('click', () => this.resetAllAttempts());
+                this.resetStudentBtn.addEventListener('click', () => this.resetStudentAttempt());
+                this.exportBtn.addEventListener('click', () => this.exportData());
+            }
             
-            let totalScore = 0;
-            let completedWithScore = 0;
-            
-            allAttempts.forEach(attempt => {
-                if (attempt.status === 'completed' && attempt.score !== undefined && attempt.maxScore) {
-                    totalScore += (attempt.score / attempt.maxScore) * 100;
-                    completedWithScore++;
+            checkAuth() {
+                const auth = localStorage.getItem('admin_auth');
+                if (auth === 'true') {
+                    this.authenticate();
                 }
-            });
-            
-            const avgScore = completedWithScore > 0 ? Math.round(totalScore / completedWithScore) : 0;
-            
-            document.getElementById('totalAttempts').textContent = total;
-            document.getElementById('completedAttempts').textContent = completed;
-            document.getElementById('terminatedAttempts').textContent = terminated;
-            document.getElementById('avgScore').textContent = `${avgScore}%`;
-        }
-
-        // Render attempts table
-        function renderTable() {
-            let filteredAttempts = [...allAttempts];
-            
-            // Apply filters
-            if (currentFilters.status && currentFilters.status !== 'all') {
-                filteredAttempts = filteredAttempts.filter(a => a.status === currentFilters.status);
             }
             
-            if (currentFilters.pattern && currentFilters.pattern !== 'all') {
-                filteredAttempts = filteredAttempts.filter(a => a.pattern === currentFilters.pattern);
-            }
-            
-            if (currentFilters.date) {
-                filteredAttempts = filteredAttempts.filter(a => 
-                    a.timestamp && a.timestamp.startsWith(currentFilters.date)
-                );
-            }
-            
-            // Pagination
-            const totalPages = Math.ceil(filteredAttempts.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageAttempts = filteredAttempts.slice(startIndex, endIndex);
-            
-            // Clear table
-            attemptsTableBody.innerHTML = '';
-            
-            if (pageAttempts.length === 0) {
-                attemptsTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                            No attempts found
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            // Add rows
-            pageAttempts.forEach(attempt => {
-                const startTime = attempt.startTime ? new Date(attempt.startTime) : new Date();
-                const endTime = attempt.endTime ? new Date(attempt.endTime) : new Date();
-                const duration = Math.round((endTime - startTime) / 1000); // in seconds
+            async handleLogin(e) {
+                e.preventDefault();
                 
-                const minutes = Math.floor(duration / 60);
-                const seconds = duration % 60;
+                const password = this.adminPasswordInput.value.trim();
                 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-medium text-gray-900">${attempt.studentName || 'Unknown'}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                            Pattern ${attempt.pattern || 'N/A'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-lg font-semibold text-gray-900">
-                            ${attempt.score !== undefined ? attempt.score : 0}/${attempt.maxScore || 0}
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            ${attempt.maxScore ? Math.round((attempt.score / attempt.maxScore) * 100) : 0}%
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${
-                            attempt.status === 'completed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }">
-                            ${attempt.status === 'completed' ? 'Completed' : 'Terminated'}
-                        </span>
-                        ${attempt.terminationReason ? 
-                          `<div class="text-xs text-gray-500 mt-1">${attempt.terminationReason}</div>` : ''}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${startTime.toLocaleDateString()}</div>
-                        <div class="text-sm text-gray-500">${startTime.toLocaleTimeString()}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">
-                            ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button class="text-blue-600 hover:text-blue-900 view-detail mr-4" 
-                                data-id="${attempt.id}">
-                            <i class="fas fa-eye mr-1"></i>View
-                        </button>
-                        <button class="text-red-600 hover:text-red-900 delete-attempt" 
-                                data-id="${attempt.id}">
-                            <i class="fas fa-trash mr-1"></i>Delete
-                        </button>
-                    </td>
-                `;
-                attemptsTableBody.appendChild(row);
-            });
-            
-            // Update pagination info
-            document.getElementById('showingCount').textContent = filteredAttempts.length;
-            document.getElementById('totalCount').textContent = allAttempts.length;
-            document.getElementById('currentPage').textContent = currentPage;
-            
-            // Update pagination buttons
-            document.getElementById('prevPage').disabled = currentPage === 1;
-            document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
-            
-            // Add event listeners to buttons
-            document.querySelectorAll('.view-detail').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const attemptId = e.target.closest('button').dataset.id;
-                    showAttemptDetail(attemptId);
-                });
-            });
-            
-            document.querySelectorAll('.delete-attempt').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const attemptId = e.target.closest('button').dataset.id;
-                    if (confirm('Are you sure you want to delete this attempt?')) {
-                        deleteAttempt(attemptId);
-                    }
-                });
-            });
-        }
-
-        // Show attempt detail
-        async function showAttemptDetail(attemptId) {
-            const attempt = allAttempts.find(a => a.id === attemptId);
-            if (!attempt) return;
-            
-            const detailContent = document.getElementById('detailContent');
-            
-            // Format answers for display
-            let answersHTML = '';
-            if (attempt.answers) {
-                Object.entries(attempt.answers).forEach(([qId, answerData]) => {
-                    answersHTML += `
-                        <div class="mb-6 p-4 border rounded-lg">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-semibold text-gray-800">Question ${qId}</h4>
-                                <span class="text-sm text-gray-500">${answerData.type}</span>
-                            </div>
-                            <div class="text-gray-700 mb-2">Answer: ${answerData.answer || 'No answer'}</div>
-                            <div class="text-sm text-gray-500">Points: ${answerData.points || 1}</div>
-                        </div>
-                    `;
-                });
+                if (!password) {
+                    this.showAlert('Please enter password', 'error');
+                    return;
+                }
+                
+                // Simple SHA-256 hash (for demo purposes)
+                const hash = await this.sha256(password);
+                
+                if (hash === ADMIN_PASSWORD_HASH) {
+                    this.authenticate();
+                    localStorage.setItem('admin_auth', 'true');
+                } else {
+                    this.showAlert('Invalid password', 'error');
+                    this.adminPasswordInput.value = '';
+                }
             }
             
-            detailContent.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-gray-50 p-6 rounded-lg">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Student Information</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Name:</span>
-                                <span class="font-medium">${attempt.studentName}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Pattern:</span>
-                                <span class="font-medium">${attempt.pattern}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Status:</span>
-                                <span class="font-medium ${attempt.status === 'completed' ? 'text-green-600' : 'text-red-600'}">
-                                    ${attempt.status}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+            async sha256(message) {
+                // Convert string to ArrayBuffer
+                const msgBuffer = new TextEncoder().encode(message);
+                
+                // Hash the message
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                
+                // Convert ArrayBuffer to Array
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                
+                // Convert bytes to hex string
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+            
+            authenticate() {
+                this.isAuthenticated = true;
+                this.loginScreen.classList.add('hidden');
+                this.dashboard.classList.remove('hidden');
+                
+                this.loadAttempts();
+                this.startAutoRefresh();
+            }
+            
+            handleLogout() {
+                this.isAuthenticated = false;
+                localStorage.removeItem('admin_auth');
+                this.dashboard.classList.add('hidden');
+                this.loginScreen.classList.remove('hidden');
+                this.adminPasswordInput.value = '';
+                
+                this.stopAutoRefresh();
+            }
+            
+            startAutoRefresh() {
+                // Refresh every 10 seconds
+                this.refreshInterval = setInterval(() => {
+                    this.loadAttempts();
+                }, 10000);
+            }
+            
+            stopAutoRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
+            }
+            
+            loadAttempts() {
+                const attempts = getAllAttempts();
+                
+                // Update stats
+                const total = attempts.length;
+                const completed = attempts.filter(a => a.status === 'completed').length;
+                const terminated = attempts.filter(a => a.status === 'terminated').length;
+                const today = attempts.filter(a => {
+                    const attemptDate = new Date(a.timestamp).toDateString();
+                    const currentDate = new Date().toDateString();
+                    return attemptDate === currentDate;
+                }).length;
+                
+                this.totalAttempts.textContent = total;
+                this.completedAttempts.textContent = completed;
+                this.terminatedAttempts.textContent = terminated;
+                this.todayAttempts.textContent = today;
+                
+                // Update table
+                this.updateAttemptsTable(attempts);
+            }
+            
+            updateAttemptsTable(attempts) {
+                if (attempts.length === 0) {
+                    this.attemptsTableBody.innerHTML = '';
+                    this.noAttemptsMessage.classList.remove('hidden');
+                    return;
+                }
+                
+                this.noAttemptsMessage.classList.add('hidden');
+                
+                const rows = attempts.map(attempt => {
+                    const date = new Date(attempt.timestamp);
+                    const formattedDate = date.toLocaleDateString();
+                    const formattedTime = date.toLocaleTimeString();
                     
-                    <div class="bg-gray-50 p-6 rounded-lg">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Exam Details</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Score:</span>
-                                <span class="font-medium">${attempt.score}/${attempt.maxScore}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Percentage:</span>
-                                <span class="font-medium">
-                                    ${attempt.maxScore ? Math.round((attempt.score / attempt.maxScore) * 100) : 0}%
+                    const statusClass = attempt.status === 'completed' ? 'status-completed' : 'status-terminated';
+                    const statusText = attempt.status === 'completed' ? 'Completed' : 'Terminated';
+                    
+                    return `
+                        <tr class="fade-in hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${attempt.name}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                                    Pattern ${attempt.pattern}
                                 </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Start Time:</span>
-                                <span class="font-medium">${new Date(attempt.startTime).toLocaleString()}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">End Time:</span>
-                                <span class="font-medium">${new Date(attempt.endTime).toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-gray-900">${attempt.score}</div>
+                                <div class="text-xs text-gray-500">Total marks</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                                ${attempt.terminationReason ? 
+                                    `<div class="text-xs text-gray-500 mt-1">${attempt.terminationReason}</div>` : 
+                                    ''
+                                }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">${formattedDate}</div>
+                                <div class="text-xs text-gray-500">${formattedTime}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button 
+                                    onclick="adminDashboard.viewAttempt('${attempt.name}', ${attempt.timestamp})"
+                                    class="text-blue-600 hover:text-blue-900 mr-4"
+                                >
+                                    View
+                                </button>
+                                <button 
+                                    onclick="adminDashboard.resetSingleAttempt('${attempt.name}')"
+                                    class="text-red-600 hover:text-red-900"
+                                >
+                                    Reset
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
                 
-                ${attempt.terminationReason ? `
-                    <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-triangle text-red-400"></i>
-                            </div>
-                            <div class="ml-3">
-                                <h4 class="text-sm font-semibold text-red-800">Termination Reason</h4>
-                                <div class="mt-1 text-sm text-red-700">${attempt.terminationReason}</div>
-                            </div>
-                        </div>
-                    </div>
-                ` : ''}
-                
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Student Answers</h3>
-                    ${answersHTML || '<p class="text-gray-500">No answer data available.</p>'}
-                </div>
-            `;
-            
-            detailModal.classList.remove('hidden');
-        }
-
-        // Delete attempt
-        async function deleteAttempt(attemptId) {
-            try {
-                await deleteDoc(doc(db, 'attempts', attemptId));
-                showNotification('Attempt deleted successfully!');
-            } catch (error) {
-                console.error('Error deleting attempt:', error);
-                showNotification('Error deleting attempt', 'error');
-            }
-        }
-
-        // Reset daily attempt
-        resetAttemptBtn.addEventListener('click', async () => {
-            const studentName = document.getElementById('resetStudentName').value.trim();
-            const date = document.getElementById('resetDate').value;
-            
-            if (!studentName) {
-                alert('Please enter student name');
-                return;
+                this.attemptsTableBody.innerHTML = rows;
             }
             
-            const attemptDate = date || new Date().toISOString().split('T')[0];
-            const attemptId = `${studentName}_${attemptDate}`;
-            
-            try {
-                await deleteDoc(doc(db, 'daily_attempts', attemptId));
-                showNotification('Daily attempt reset successfully!');
-                loadDailyAttempts();
+            resetAllAttempts() {
+                if (!confirm('Are you sure you want to reset ALL attempts? This action cannot be undone.')) {
+                    return;
+                }
                 
-                // Clear inputs
-                document.getElementById('resetStudentName').value = '';
-                document.getElementById('resetDate').value = '';
-            } catch (error) {
-                console.error('Error resetting attempt:', error);
-                showNotification('Error resetting attempt', 'error');
-            }
-        });
-
-        // Refresh daily attempts
-        refreshDaily.addEventListener('click', loadDailyAttempts);
-
-        // Render daily attempts
-        function renderDailyAttempts() {
-            dailyAttemptsBody.innerHTML = '';
-            
-            if (dailyAttempts.length === 0) {
-                dailyAttemptsBody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">
-                            No daily attempts found
-                        </td>
-                    </tr>
-                `;
-                return;
+                resetAllAttempts();
+                this.showAlert('All attempts have been reset', 'success');
+                this.loadAttempts();
             }
             
-            dailyAttempts.forEach(attempt => {
-                const row = document.createElement('tr');
-                const timestamp = attempt.timestamp ? new Date(attempt.timestamp) : new Date();
+            resetStudentAttempt() {
+                const studentName = this.studentSearch.value.trim();
                 
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-medium text-gray-900">${attempt.studentName}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${attempt.date || timestamp.toISOString().split('T')[0]}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${timestamp.toLocaleTimeString()}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button class="text-red-600 hover:text-red-900 delete-daily" 
-                                data-id="${attempt.id}">
-                            <i class="fas fa-trash mr-1"></i>Delete
-                        </button>
-                    </td>
-                `;
-                dailyAttemptsBody.appendChild(row);
-            });
+                if (!studentName) {
+                    this.showAlert('Please enter a student name', 'error');
+                    return;
+                }
+                
+                if (!confirm(`Reset all attempts for ${studentName}?`)) {
+                    return;
+                }
+                
+                resetStudentAttempts(studentName);
+                this.showAlert(`Attempts for ${studentName} have been reset`, 'success');
+                this.studentSearch.value = '';
+                this.loadAttempts();
+            }
             
-            // Add event listeners to delete buttons
-            document.querySelectorAll('.delete-daily').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const attemptId = e.target.closest('button').dataset.id;
-                    if (confirm('Are you sure you want to delete this daily attempt record?')) {
-                        try {
-                            await deleteDoc(doc(db, 'daily_attempts', attemptId));
-                            showNotification('Daily attempt record deleted!');
-                            loadDailyAttempts();
-                        } catch (error) {
-                            console.error('Error deleting daily attempt:', error);
-                            showNotification('Error deleting record', 'error');
+            resetSingleAttempt(studentName) {
+                if (!confirm(`Reset attempts for ${studentName}?`)) {
+                    return;
+                }
+                
+                resetStudentAttempts(studentName);
+                this.showAlert(`Attempts for ${studentName} have been reset`, 'success');
+                this.loadAttempts();
+            }
+            
+            viewAttempt(studentName, timestamp) {
+                const attempts = getAllAttempts();
+                const attempt = attempts.find(a => a.name === studentName && a.timestamp === timestamp);
+                
+                if (!attempt) return;
+                
+                const answersText = Object.entries(attempt.answers)
+                    .map(([qId, answer]) => `Question ${qId}: ${answer}`)
+                    .join('\n');
+                
+                const message = `Student: ${attempt.name}
+Pattern: ${attempt.pattern}
+Score: ${attempt.score}
+Status: ${attempt.status}
+Date: ${new Date(attempt.timestamp).toLocaleString()}
+${attempt.terminationReason ? `Reason: ${attempt.terminationReason}` : ''}
+
+Answers:
+${answersText}`;
+                
+                alert(message);
+            }
+            
+            exportData() {
+                const attempts = getAllAttempts();
+                const dataStr = JSON.stringify(attempts, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `exam-attempts-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                this.showAlert('Data exported successfully', 'success');
+            }
+            
+            showAlert(message, type) {
+                // Remove existing alerts
+                const existingAlert = document.querySelector('.alert-toast');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+                
+                const alert = document.createElement('div');
+                alert.className = `alert-toast fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ${
+                    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                }`;
+                alert.textContent = message;
+                alert.style.transform = 'translateX(100%)';
+                
+                document.body.appendChild(alert);
+                
+                // Animate in
+                setTimeout(() => {
+                    alert.style.transform = 'translateX(0)';
+                }, 10);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    alert.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
                         }
-                    }
+                    }, 300);
+                }, 5000);
+                
+                // Click to dismiss
+                alert.addEventListener('click', () => {
+                    alert.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 300);
                 });
-            });
-        }
-
-        // Filter event listeners
-        document.getElementById('statusFilter').addEventListener('change', (e) => {
-            currentFilters.status = e.target.value;
-            currentPage = 1;
-            renderTable();
-        });
-
-        document.getElementById('patternFilter').addEventListener('change', (e) => {
-            currentFilters.pattern = e.target.value;
-            currentPage = 1;
-            renderTable();
-        });
-
-        document.getElementById('dateFilter').addEventListener('change', (e) => {
-            currentFilters.date = e.target.value;
-            currentPage = 1;
-            renderTable();
-        });
-
-        document.getElementById('resetFilters').addEventListener('click', () => {
-            document.getElementById('statusFilter').value = 'all';
-            document.getElementById('patternFilter').value = 'all';
-            document.getElementById('dateFilter').value = '';
-            currentFilters = {};
-            currentPage = 1;
-            renderTable();
-        });
-
-        // Pagination
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTable();
             }
-        });
-
-        document.getElementById('nextPage').addEventListener('click', () => {
-            const totalPages = Math.ceil(allAttempts.length / itemsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderTable();
-            }
-        });
-
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${
-                type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-            }`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateY(-100%)';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
         }
-
-        // Initialize
-        console.log('Admin dashboard initialized');
+        
+        // Initialize admin dashboard
+        const adminDashboard = new AdminDashboard();
+        
+        // Make it globally available for button onclick handlers
+        window.adminDashboard = adminDashboard;
+        
+        // Also expose helper functions globally
+        window.viewAttempt = (studentName, timestamp) => adminDashboard.viewAttempt(studentName, timestamp);
+        window.resetSingleAttempt = (studentName) => adminDashboard.resetSingleAttempt(studentName);
     </script>
 </body>
 </html>

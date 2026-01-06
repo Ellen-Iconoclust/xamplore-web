@@ -164,16 +164,15 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
     <div id="failed" class="hidden text-center">
       <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
       <div class="relative">
-        <input
+      <input
   id="secondPass"
   type="password"
-  autocomplete="off"
+  autocomplete="new-password"
   autocorrect="off"
   autocapitalize="off"
   spellcheck="false"
-  inputmode="none"
   readonly
-  onfocus="this.removeAttribute('readonly');"
+  onfocus="this.removeAttribute('readonly'); this.setAttribute('autocomplete', 'off');"
   class="w-full p-2 mt-3 border rounded"
   placeholder="Second Chance Code"
 />

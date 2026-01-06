@@ -19,23 +19,46 @@
 
 <style>
 * { user-select:none; -webkit-user-select:none; }
-body { font-family:'Poppins',sans-serif; }
+body { font-family:'Poppins',sans-serif; overflow-x: hidden; }
 .brand { font-family:'Montserrat',sans-serif; }
+input[type="password"] { user-select: none; -webkit-user-select: none; }
 </style>
 </head>
 
 <body class="bg-white text-gray-800 min-h-screen flex flex-col">
 
+<!-- WELCOME POPUP -->
+<div id="welcomePopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+    <button onclick="closeWelcomePopup()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+      <i data-lucide="x"></i>
+    </button>
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="graduation-cap" class="text-emerald-600"></i>
+      <h3 class="text-xl font-bold text-emerald-600">Welcome to Xamplore!</h3>
+    </div>
+    <p class="text-gray-600 mb-4">
+      Ready to test your knowledge? Head over to the <span class="font-semibold text-emerald-600">Test</span> section in the menu to take secure exams.
+    </p>
+    <div class="text-sm text-gray-500">
+      <i data-lucide="info" class="inline w-4 h-4 mr-1"></i>
+      Platform Version: <span class="font-bold">Xam1.0</span>
+    </div>
+  </div>
+</div>
+
 <!-- NAV -->
-<nav class="border-b shadow-sm">
+<nav class="border-b shadow-sm sticky top-0 bg-white z-40">
   <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
     <div class="flex items-center gap-2 brand text-2xl font-extrabold text-emerald-600">
       <i data-lucide="graduation-cap"></i> Xamplore
+      <span class="text-xs font-normal bg-emerald-100 text-emerald-700 px-2 py-1 rounded">v1.0</span>
     </div>
 
     <div class="hidden md:flex gap-8 font-semibold">
       <button onclick="showSection('home')">Home</button>
       <button onclick="showSection('test')">Test</button>
+      <button onclick="showSection('hangman')">Hangman</button>
       <button onclick="showSection('about')">About</button>
     </div>
 
@@ -47,6 +70,7 @@ body { font-family:'Poppins',sans-serif; }
   <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
     <button onclick="showSection('home')" class="block">Home</button>
     <button onclick="showSection('test')" class="block">Test</button>
+    <button onclick="showSection('hangman')" class="block">Hangman</button>
     <button onclick="showSection('about')" class="block">About</button>
   </div>
 </nav>
@@ -139,18 +163,19 @@ body { font-family:'Poppins',sans-serif; }
 
     <div id="failed" class="hidden text-center">
       <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
-      <input
-  id="secondPass"
-  type="password"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="off"
-  spellcheck="false"
-  inputmode="none"
-  class="w-full p-2 mt-3 border rounded"
-  placeholder="Second Chance Code"
-/>
-
+      <div class="relative">
+        <input
+          id="secondPass"
+          type="password"
+          readonly
+          onfocus="this.removeAttribute('readonly');"
+          onblur="this.setAttribute('readonly', true);"
+          class="w-full p-2 mt-3 border rounded bg-gray-50"
+          placeholder="Second Chance Code"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </div>
       <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 text-white p-2 rounded">
         Retry Exam
       </button>
@@ -167,32 +192,330 @@ body { font-family:'Poppins',sans-serif; }
   </div>
 </section>
 
+<!-- HANGMAN GAME -->
+<section id="hangman" class="hidden py-16">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">Tech Hangman</h2>
+    
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Game Area -->
+      <div class="bg-white p-6 rounded-xl shadow-lg border">
+        <div class="text-center mb-6">
+          <div class="text-2xl font-mono mb-4" id="hangmanWordDisplay"></div>
+          <div class="text-sm text-gray-600 mb-2">Category: <span class="font-bold text-emerald-600">Computer Technology</span></div>
+          <div class="text-sm">Lives: <span id="livesCount" class="font-bold text-red-600">7</span></div>
+        </div>
+
+        <div class="mb-6">
+          <div class="flex flex-wrap gap-2 justify-center mb-4" id="letterButtons"></div>
+          <div class="text-center">
+            <button onclick="resetHangman()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+              New Game
+            </button>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <div id="hangmanMessage" class="font-semibold mb-4"></div>
+          <div id="hangmanHint" class="text-sm text-gray-600 italic"></div>
+        </div>
+      </div>
+
+      <!-- Instructions & Stats -->
+      <div class="space-y-6">
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">How to Play</h3>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li>• Guess the computer technology related word</li>
+            <li>• Click letters to make guesses</li>
+            <li>• You have 7 lives</li>
+            <li>• Incorrect guesses reduce lives</li>
+            <li>• Win by guessing all letters</li>
+          </ul>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">Game Stats</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-emerald-600" id="gamesWon">0</div>
+              <div class="text-gray-600">Games Won</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-red-600" id="gamesLost">0</div>
+              <div class="text-gray-600">Games Lost</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">Word Bank</h3>
+          <p class="text-sm text-gray-600">
+            Contains over 70+ computer technology terms including programming languages, frameworks, hardware, and software concepts.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ABOUT -->
-<section id="about" class="hidden py-20 text-center">
-  <h2 class="text-3xl font-bold text-emerald-600">About Xamplore</h2>
-  <p class="mt-4 max-w-xl mx-auto text-gray-600">
-    A browser-based secure examination system built for academic integrity.
-  </p>
+<section id="about" class="hidden py-20">
+  <div class="max-w-4xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">About Xamplore</h2>
+    
+    <div class="bg-white p-8 rounded-xl shadow-lg border">
+      <div class="text-center mb-6">
+        <span class="inline-block bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full font-bold text-sm">
+          Version: Xam1.0
+        </span>
+      </div>
+
+      <div class="space-y-6 text-gray-700">
+        <p>
+          <strong class="text-emerald-600">Xamplore</strong> is a comprehensive, browser-based secure examination platform developed specifically for academic institutions seeking to maintain integrity in digital assessments. Born from the need to combat widespread online examination malpractice, Xamplore employs cutting-edge browser technologies to create a controlled testing environment.
+        </p>
+
+        <div class="border-l-4 border-emerald-500 pl-4 py-2 bg-emerald-50">
+          <h3 class="font-bold text-lg text-emerald-700 mb-2">Our Mission</h3>
+          <p>
+            To revolutionize online education by providing a fair, transparent, and secure assessment platform that accurately measures student knowledge while preventing academic dishonesty through technological safeguards.
+          </p>
+        </div>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">Core Technologies</h3>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Fullscreen API Enforcement</strong>: Prevents multitasking during exams</li>
+          <li><strong>Page Visibility Detection</strong>: Monitors tab switching and background activity</li>
+          <li><strong>Randomization Algorithms</strong>: Unique question and option sequences per student</li>
+          <li><strong>Client-side PDF Generation</strong>: Instant results without server dependencies</li>
+          <li><strong>Progressive Enhancement</strong>: Works across modern browsers without plugins</li>
+        </ul>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">Academic Applications</h3>
+        <p>
+          Xamplore is particularly suited for computer science and technology courses where understanding of concepts can be effectively tested through multiple-choice questions. The platform supports various question patterns and difficulty levels, making it adaptable for courses from introductory programming to advanced web development.
+        </p>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">Future Development</h3>
+        <p>
+          The Xam1.0 release represents our foundational platform. Future versions will incorporate artificial intelligence for question generation, plagiarism detection in coding questions, and comprehensive analytics dashboards for educators. We're committed to evolving with educational technology needs.
+        </p>
+
+        <div class="bg-gray-50 p-4 rounded-lg mt-8">
+          <p class="text-sm text-gray-600">
+            <i data-lucide="shield" class="inline w-4 h-4 mr-1"></i>
+            <strong>Security Notice:</strong> Xamplore operates entirely within the browser sandbox, ensuring no student data is transmitted externally. All examination data remains on the user's device until voluntarily exported via PDF.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- FOOTER -->
-<footer class="mt-auto border-t py-4 text-center text-sm text-gray-600">
-  Made by
-  <a href="https://ellen-dev.vercel.app" target="_blank"
-     class="text-emerald-600 font-semibold hover:underline">
-    Ellen Iconoclust
-  </a>
+<footer class="mt-auto border-t py-6 text-center">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="text-sm text-gray-600">
+        <span class="inline-flex items-center">
+          <i data-lucide="copyright" class="w-4 h-4 mr-1"></i>
+          Xamplore All Rights Reserved
+        </span>
+      </div>
+      
+      <div class="text-sm text-gray-600">
+        Made by
+        <a href="https://ellen-dev.vercel.app" target="_blank"
+           class="text-emerald-600 font-semibold hover:underline">
+          Ellen Iconoclust
+        </a>
+      </div>
+      
+      <div class="text-xs text-gray-500">
+        Platform Version: <span class="font-bold">Xam1.0</span>
+      </div>
+    </div>
+  </div>
 </footer>
 
 <script>
 lucide.createIcons();
 
+// Show welcome popup on load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    document.getElementById('welcomePopup').classList.remove('hidden');
+  }, 500);
+});
+
+function closeWelcomePopup() {
+  document.getElementById('welcomePopup').classList.add('hidden');
+}
+
 /* NAV */
-function toggleMenu(){ mobileMenu.classList.toggle("hidden"); }
+function toggleMenu(){ 
+  document.getElementById('mobileMenu').classList.toggle("hidden"); 
+}
 function showSection(id){
-  ["home","test","about"].forEach(s=>document.getElementById(s).classList.add("hidden"));
+  ["home","test","hangman","about"].forEach(s=>document.getElementById(s).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
-  mobileMenu.classList.add("hidden");
+  document.getElementById('mobileMenu').classList.add("hidden");
+  if(id === 'hangman') {
+    setTimeout(initializeHangman, 100);
+  }
+}
+
+/* HANGMAN GAME DATA */
+const HANGMAN_WORDS = [
+  // Programming Languages
+  "javascript", "python", "java", "typescript", "kotlin", "swift", "ruby", "php", "go", "rust",
+  "csharp", "cpp", "c", "scala", "perl", "haskell", "lua", "r", "dart", "elixir",
+  "clojure", "erlang", "fsharp", "ocaml", "fortran", "cobol", "basic", "pascal", "ada", "lisp",
+  
+  // Frameworks & Libraries
+  "react", "angular", "vue", "django", "flask", "spring", "express", "laravel", "rails", "ember",
+  "svelte", "nextjs", "nuxt", "gatsby", "jquery", "bootstrap", "tailwind", "nodejs", "electron", "reactnative",
+  
+  // Databases
+  "mysql", "postgresql", "mongodb", "redis", "cassandra", "elasticsearch", "sqlite", "oracle", "dynamodb", "firebase",
+  
+  // Tools & Platforms
+  "docker", "kubernetes", "git", "jenkins", "ansible", "terraform", "vagrant", "grafana", "prometheus", "kibana",
+  
+  // Concepts & Terms
+  "algorithm", "blockchain", "encryption", "firewall", "virtualization", "container", "microservice", "serverless",
+  "devops", "agile", "scrum", "api", "rest", "graphql", "websocket", "machinelearning", "artificialintelligence",
+  "bigdata", "cloudcomputing", "cybersecurity", "datastructure", "debugging", "compiler", "interpreter"
+];
+
+const HANGMAN_HINTS = {
+  "javascript": "Client-side scripting language for web interactivity",
+  "python": "Popular language known for its readability and versatility",
+  "react": "Facebook's UI library for building component-based interfaces",
+  "docker": "Containerization platform for packaging applications",
+  "blockchain": "Decentralized digital ledger technology",
+  "algorithm": "Step-by-step procedure for calculations",
+  "kubernetes": "Container orchestration system for automation",
+  "typescript": "Microsoft's typed superset of JavaScript",
+  "mongodb": "NoSQL document-oriented database",
+  "devops": "Combination of development and operations practices"
+};
+
+let hangmanGame = {
+  word: "",
+  display: [],
+  guessed: [],
+  lives: 7,
+  gamesWon: 0,
+  gamesLost: 0,
+  gameActive: false
+};
+
+function initializeHangman() {
+  if (!hangmanGame.gameActive) {
+    startNewHangmanGame();
+  }
+}
+
+function startNewHangmanGame() {
+  // Select random word
+  hangmanGame.word = HANGMAN_WORDS[Math.floor(Math.random() * HANGMAN_WORDS.length)];
+  hangmanGame.display = hangmanGame.word.split('').map(() => '_');
+  hangmanGame.guessed = [];
+  hangmanGame.lives = 7;
+  hangmanGame.gameActive = true;
+  
+  updateHangmanDisplay();
+  createLetterButtons();
+  updateHangmanMessage("");
+  updateHint();
+  
+  // Update stats display
+  document.getElementById('gamesWon').textContent = hangmanGame.gamesWon;
+  document.getElementById('gamesLost').textContent = hangmanGame.gamesLost;
+  document.getElementById('livesCount').textContent = hangmanGame.lives;
+}
+
+function updateHangmanDisplay() {
+  document.getElementById('hangmanWordDisplay').textContent = hangmanGame.display.join(' ');
+}
+
+function createLetterButtons() {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const container = document.getElementById('letterButtons');
+  container.innerHTML = '';
+  
+  letters.split('').forEach(letter => {
+    const button = document.createElement('button');
+    button.textContent = letter.toUpperCase();
+    button.className = 'w-10 h-10 rounded-lg border hover:bg-emerald-50 transition ' + 
+      (hangmanGame.guessed.includes(letter) ? 'bg-gray-200 cursor-not-allowed' : 'bg-white');
+    button.disabled = hangmanGame.guessed.includes(letter);
+    button.onclick = () => guessLetter(letter);
+    container.appendChild(button);
+  });
+}
+
+function guessLetter(letter) {
+  if (!hangmanGame.gameActive || hangmanGame.guessed.includes(letter)) return;
+  
+  hangmanGame.guessed.push(letter);
+  
+  if (hangmanGame.word.includes(letter)) {
+    // Correct guess
+    hangmanGame.word.split('').forEach((char, index) => {
+      if (char === letter) {
+        hangmanGame.display[index] = letter;
+      }
+    });
+    updateHangmanMessage(`Good guess! "${letter.toUpperCase()}" is in the word.`);
+  } else {
+    // Wrong guess
+    hangmanGame.lives--;
+    updateHangmanMessage(`Wrong guess! "${letter.toUpperCase()}" is not in the word. Lives remaining: ${hangmanGame.lives}`);
+  }
+  
+  updateHangmanDisplay();
+  createLetterButtons();
+  document.getElementById('livesCount').textContent = hangmanGame.lives;
+  
+  checkGameStatus();
+}
+
+function checkGameStatus() {
+  if (!hangmanGame.display.includes('_')) {
+    // Win
+    hangmanGame.gameActive = false;
+    hangmanGame.gamesWon++;
+    updateHangmanMessage(`Congratulations! You guessed the word: ${hangmanGame.word.toUpperCase()}`);
+    document.getElementById('gamesWon').textContent = hangmanGame.gamesWon;
+  } else if (hangmanGame.lives <= 0) {
+    // Lose
+    hangmanGame.gameActive = false;
+    hangmanGame.gamesLost++;
+    updateHangmanMessage(`Game Over! The word was: ${hangmanGame.word.toUpperCase()}`);
+    document.getElementById('gamesLost').textContent = hangmanGame.gamesLost;
+    // Reveal the word
+    hangmanGame.display = hangmanGame.word.split('');
+    updateHangmanDisplay();
+  }
+}
+
+function updateHangmanMessage(message) {
+  document.getElementById('hangmanMessage').textContent = message;
+  document.getElementById('hangmanMessage').className = 'font-semibold mb-4 ' + 
+    (message.includes('Congratulations') ? 'text-emerald-600' : 
+     message.includes('Game Over') ? 'text-red-600' : 'text-gray-700');
+}
+
+function updateHint() {
+  const hint = HANGMAN_HINTS[hangmanGame.word] || "Computer technology related term";
+  document.getElementById('hangmanHint').textContent = `Hint: ${hint}`;
+}
+
+function resetHangman() {
+  startNewHangmanGame();
 }
 
 /* DATA */
@@ -249,7 +572,7 @@ const QUESTION_BANK = {
 
     { q: "Which CSS property controls outer spacing?", options: ["padding", "border", "margin", "gap"], answer: "margin" },
     { q: "Which JavaScript method locates elements by ID?", options: ["getelementsByClassName()", "getElementById()", "getElementbyId()", "getelementbyId()"], answer: "getElementById()" },
-    { q: "Which Canvas property determines the line’s stroke pigment?", options: ["strokeColor", "lineColor", "strokeStyle", "borderColor"], answer: "strokeStyle" },
+    { q: "Which Canvas property determines the line's stroke pigment?", options: ["strokeColor", "lineColor", "strokeStyle", "borderColor"], answer: "strokeStyle" },
     { q: "Which Canvas method initializes a drawing path?", options: ["begin()", "startPath()", "beginPath()", "openPath()"], answer: "beginPath()" },
     { q: "Which CSS unit inherits relative font sizing?", options: ["px", "rem", "em", "vh"], answer: "em" },
     { q: "Which CSS property controls opacity levels?", options: ["visibility", "transparency", "opacity", "filter"], answer: "opacity" },
@@ -305,7 +628,6 @@ const QUESTION_BANK = {
     { q: "Which CSS property fits images within containers?", options: ["object-position", "image-fit", "object-fit", "background-size"], answer: "object-fit" }
   ]
 };
-
 
 /* STATE */
 let studentName,pattern,questions,index=0,answers=[],examStarted=false;

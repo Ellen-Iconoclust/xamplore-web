@@ -664,7 +664,29 @@ function nextQuestion(){
 /* SECOND */
 function secondChance(){
   if(secondPass.value!==SECOND_PASS) return alert("Wrong password");
-  location.reload();
+  
+  // INSTEAD of reloading, reset everything
+  failed.classList.add("hidden");
+  login.classList.remove("hidden");
+  
+  // Clear previous inputs
+  nameInput.value = "";
+  patternSelect.value = "";
+  passwordInput.value = "";
+  secondPass.value = "";
+  
+  // Reset exam state
+  examStarted = false;
+  index = 0;
+  answers = [];
+  questions = [];
+  studentName = "";
+  pattern = "";
+  
+  // Focus on name input (this triggers mobile keyboard)
+  setTimeout(() => {
+    nameInput.focus();
+  }, 100);
 }
 
 /* RESULT */

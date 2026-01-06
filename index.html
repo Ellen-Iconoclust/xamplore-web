@@ -203,6 +203,7 @@ body { font-family:'Poppins',sans-serif; }
 </section>
 
 <!-- HANGMAN GAME -->
+<!-- HANGMAN GAME -->
 <section id="hangman" class="hidden py-12 px-4">
   <div class="max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">Computer Technology Hangman</h2>
@@ -230,12 +231,34 @@ body { font-family:'Poppins',sans-serif; }
         </div>
         
         <!-- Word Display -->
-        <div class="mb-8">
+        <div class="mb-6">
           <p class="text-sm font-semibold text-gray-600 mb-3">Current Word:</p>
           <div id="word-display" class="flex flex-wrap gap-2 justify-center text-2xl font-bold min-h-12">
             <!-- Word letters will appear here -->
           </div>
           <p id="hint" class="text-sm text-gray-500 mt-3 text-center italic"></p>
+        </div>
+        
+        <!-- TEXT INPUT FOR LETTER GUESSING -->
+        <div class="mb-6">
+          <p class="text-sm font-semibold text-gray-600 mb-2">Type a letter:</p>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="letter-input" 
+              maxlength="1" 
+              class="flex-1 p-3 border border-gray-300 rounded-lg text-center text-xl font-bold uppercase"
+              placeholder="A-Z"
+              onkeypress="return handleKeyPress(event)"
+            >
+            <button 
+              onclick="guessFromInput()"
+              class="bg-emerald-600 text-white px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
+            >
+              Guess
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mt-2 text-center">Press Enter or click Guess</p>
         </div>
         
         <!-- Controls -->
@@ -261,10 +284,30 @@ body { font-family:'Poppins',sans-serif; }
         
         <!-- Virtual Keyboard -->
         <div class="mb-6">
-          <p class="text-sm font-semibold text-gray-600 mb-4">Click a letter to guess:</p>
+          <p class="text-sm font-semibold text-gray-600 mb-4">Or click a letter below:</p>
           <div id="keyboard" class="grid grid-cols-9 gap-2">
             <!-- Keyboard will be generated here -->
           </div>
+        </div>
+        
+        <!-- Word Guessing (Optional) -->
+        <div class="mb-6">
+          <p class="text-sm font-semibold text-gray-600 mb-2">Guess the whole word:</p>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="word-input" 
+              class="flex-1 p-2 border border-gray-300 rounded"
+              placeholder="Enter full word"
+            >
+            <button 
+              onclick="guessWholeWord()"
+              class="bg-purple-600 text-white px-4 rounded font-semibold hover:bg-purple-700 transition"
+            >
+              Guess Word
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">(Optional - skip to win if correct)</p>
         </div>
         
         <!-- Game Statistics -->
@@ -1006,6 +1049,172 @@ window.addEventListener('load', () => {
     // Hangman will be initialized when the section is shown
   }
 });
+  /* HANGMAN INPUT FUNCTIONS */
+
+// Handle Enter key press in letter input
+function handleKeyPress(event) {
+  if (event.key === 'Enter') {
+    guessFromInput();
+    return false;
+  }
+  
+  // Only allow letters A-Z
+  const charCode = event.charCode || event.keyCode;
+  const char = String.fromCharCode(charCode);
+  return /^[A-Za-z]$/.test(char);
+}
+
+// Guess letter from text input
+function guessFromInput() {
+  const input = document.getElementById('letter-input');
+  const letter = input.value.toUpperCase().trim();
+  
+  if (!letter || letter.length !== 1) {
+    alert('Please enter a single letter (A-Z)');
+    input.focus();
+    return;
+  }
+  
+  if (!/^[A-Z]$/.test(letter)) {
+    alert('Please enter only letters A-Z');
+    input.value = '';
+    input.focus();
+    return;
+  }
+  
+  // Check if letter was already guessed
+  if (hangmanGame.guessedLetters.includes(letter) || hangmanGame.wrongLetters.includes(letter)) {
+    alert(`You already guessed "${letter}"!`);
+    input.value = '';
+    input.focus();
+    return;
+  }
+  
+  guessLetter(letter);
+  input.value = '';
+  input.focus();
+}
+
+// Guess the whole word
+function guessWholeWord() {
+  if (!hangmanGame.gameActive) {
+    alert('Start a new game first!');
+    return;
+  }
+  
+  const input = document.getElementById('word-input');
+  const guessedWord = input.value.toUpperCase().trim();
+  
+  if (!guessedWord) {
+    alert('Please enter a word to guess');
+    return;
+  }
+  
+  if (guessedWord === hangmanGame.currentWord) {
+    // Correct word guess - win immediately
+    // Add all letters to guessed letters
+    for (let letter of hangmanGame.currentWord) {
+      if (!hangmanGame.guessedLetters.includes(letter)) {
+        hangmanGame.guessedLetters.push(letter);
+      }
+    }
+    updateWordDisplay();
+    winGame();
+  } else {
+    // Wrong word guess - lose a life
+    hangmanGame.lives--;
+    updateHangmanDisplay();
+    
+    alert(`Incorrect! The word is not "${guessedWord}". You lose a life!`);
+    
+    if (hangmanGame.lives <= 0) {
+      loseGame();
+    }
+  }
+  
+  input.value = '';
+}
+
+// Update the guessLetter function to also disable input for that letter
+function guessLetter(letter) {
+  if (!hangmanGame.gameActive) return;
+  
+  letter = letter.toUpperCase();
+  
+  // Check if letter was already guessed
+  if (hangmanGame.guessedLetters.includes(letter) || hangmanGame.wrongLetters.includes(letter)) {
+    return;
+  }
+  
+  // Check if letter is in the word
+  if (hangmanGame.currentWord.includes(letter)) {
+    hangmanGame.guessedLetters.push(letter);
+    updateWordDisplay();
+    
+    // Add score for correct guess
+    hangmanGame.score += 5;
+    updateScoreDisplay();
+  } else {
+    hangmanGame.wrongLetters.push(letter);
+    hangmanGame.lives--;
+    updateHangmanDisplay();
+    updateWrongLetters();
+    
+    // Check if game over
+    if (hangmanGame.lives <= 0) {
+      loseGame();
+    }
+  }
+  
+  // Disable the keyboard button
+  const buttons = document.querySelectorAll('#keyboard button');
+  buttons.forEach(btn => {
+    if (btn.textContent === letter) {
+      btn.disabled = true;
+      btn.className = 'p-2 bg-gray-300 rounded text-center font-bold cursor-not-allowed';
+    }
+  });
+}
+
+// Update newGame function to also clear input fields
+function newGame() {
+  // Reset game state
+  const randomIndex = Math.floor(Math.random() * HANGMAN_WORDS.length);
+  hangmanGame.currentWord = HANGMAN_WORDS[randomIndex].word;
+  hangmanGame.hint = HANGMAN_WORDS[randomIndex].hint;
+  hangmanGame.guessedLetters = [];
+  hangmanGame.wrongLetters = [];
+  hangmanGame.lives = hangmanGame.maxLives;
+  hangmanGame.gameActive = true;
+  
+  // Clear input fields
+  document.getElementById('letter-input').value = '';
+  document.getElementById('word-input').value = '';
+  document.getElementById('letter-input').focus();
+  
+  // Reset keyboard buttons
+  const buttons = document.querySelectorAll('#keyboard button');
+  buttons.forEach(btn => {
+    btn.disabled = false;
+    btn.className = 'hangman-letter p-2 bg-gray-100 hover:bg-emerald-100 rounded text-center font-bold transition';
+  });
+  
+  // Update display
+  updateHangmanDisplay();
+  updateWordDisplay();
+  updateWrongLetters();
+  updateScoreDisplay();
+  updateGameStats();
+  
+  // Reset hint button
+  document.getElementById('hint-btn').disabled = false;
+  document.getElementById('hint-btn').className = 'w-full bg-blue-100 text-blue-700 py-2 rounded-lg font-semibold hover:bg-blue-200 transition';
+  
+  // Update status
+  document.getElementById('hangman-drawing').textContent = hangmanGame.hangmanDrawings[0];
+  document.getElementById('hangman-status').textContent = 'Guess the tech word!';
+  document.getElementById('hint').textContent = '';
+}
 </script>
 
 </body>

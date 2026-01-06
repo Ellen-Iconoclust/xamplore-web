@@ -5,35 +5,76 @@
 <title>Xamplore – Secure Exam</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
 * {
   user-select: none;
   -webkit-user-select: none;
 }
+body {
+  font-family: 'Poppins', sans-serif;
+}
+.brand {
+  font-family: 'Montserrat', sans-serif;
+}
 </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-800">
+<body class="bg-white text-gray-800 min-h-screen">
 
-<nav class="bg-white shadow px-6 py-4">
-  <h1 class="text-2xl font-bold text-emerald-700">Xamplore</h1>
+<!-- NAVBAR -->
+<nav class="border-b shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2 brand text-2xl font-extrabold text-emerald-600">
+      <i data-lucide="graduation-cap"></i>
+      Xamplore
+    </div>
+
+    <div class="hidden md:flex gap-8 font-semibold">
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('test')">Test</button>
+      <button onclick="showSection('about')">About</button>
+    </div>
+
+    <button class="md:hidden" onclick="toggleMenu()">
+      <i data-lucide="menu"></i>
+    </button>
+  </div>
+
+  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
+    <button class="block" onclick="showSection('home')">Home</button>
+    <button class="block" onclick="showSection('test')">Test</button>
+    <button class="block" onclick="showSection('about')">About</button>
+  </div>
 </nav>
 
-<section class="text-center py-10">
-  <h2 class="text-3xl font-extrabold text-emerald-800">
-    Smarter Exams for Smarter Students
-  </h2>
-  <p class="text-emerald-600 mt-2">Exam System for SRCAS</p>
+<!-- HOME -->
+<section id="home" class="py-20 text-center">
+  <h1 class="text-5xl font-extrabold brand text-emerald-600">Smarter Exams</h1>
+  <p class="mt-4 text-xl font-semibold">Built for SRCAS Students</p>
+  <p class="mt-6 max-w-xl mx-auto text-gray-600">
+    Xamplore ensures integrity, focus, and fairness in online examinations with secure exam flow.
+  </p>
 </section>
 
-<div class="flex justify-center pb-16">
-  <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-xl">
+<!-- TEST -->
+<section id="test" class="hidden py-16">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-xl">
 
-    <!-- START -->
-    <div id="start">
+    <!-- LOGIN -->
+    <div id="login">
+      <h2 class="text-2xl font-bold mb-4 text-emerald-600">Exam Login</h2>
       <input id="nameInput" class="w-full p-2 mb-3 border rounded" placeholder="Your Name">
       <select id="patternSelect" class="w-full p-2 mb-3 border rounded">
         <option value="">Select Pattern</option>
@@ -42,93 +83,79 @@
         <option value="C">Pattern C</option>
       </select>
       <input id="passwordInput" type="password" class="w-full p-2 mb-4 border rounded" placeholder="Pattern Password">
-      <button id="startBtn" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
-        Start Test
+      <button onclick="verifyLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        Continue
+      </button>
+    </div>
+
+    <!-- RULES -->
+    <div id="rules" class="hidden">
+      <h2 class="text-xl font-bold text-emerald-600 mb-3">Rules & Regulations</h2>
+      <ul class="list-disc pl-5 text-sm space-y-2">
+        <li>No tab switching</li>
+        <li>No exiting fullscreen</li>
+        <li>No screenshots or copy</li>
+        <li>Violation ends test immediately</li>
+      </ul>
+      <button onclick="startExam()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+        I Agree & Start Exam
       </button>
     </div>
 
     <!-- TEST -->
-    <div id="test" class="hidden">
+    <div id="exam" class="hidden">
       <div id="questionBox"></div>
-      <button id="nextBtn" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+      <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
         Next
       </button>
     </div>
 
-    <!-- LOADING -->
-    <div id="loading" class="hidden text-center">
-      <p class="text-lg font-semibold text-emerald-700">Submitting answers…</p>
-      <div class="mt-4 animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto"></div>
+    <!-- FAILED -->
+    <div id="failed" class="hidden text-center">
+      <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
+      <p class="text-sm mt-2">Enter second chance password</p>
+      <input id="secondPass" class="w-full p-2 mt-3 border rounded" placeholder="Second Chance Password">
+      <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 text-white p-2 rounded">
+        Retry Exam
+      </button>
     </div>
 
     <!-- RESULT -->
     <div id="result" class="hidden text-center">
-      <h1 class="text-3xl font-bold text-emerald-700">Test Completed</h1>
+      <h2 class="text-2xl font-bold text-emerald-600">Test Completed</h2>
       <p id="resultText" class="mt-3"></p>
-      <button id="downloadBtn" class="mt-4 bg-emerald-600 text-white p-2 rounded">
-        Download Answers PDF
+      <button onclick="downloadPDF()" class="mt-4 bg-emerald-600 text-white p-2 rounded">
+        Download PDF
       </button>
     </div>
 
   </div>
-</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="hidden py-20 text-center">
+  <h2 class="text-3xl font-bold text-emerald-600">About Xamplore</h2>
+  <p class="mt-4 max-w-xl mx-auto text-gray-600">
+    Xamplore is a secure online examination platform designed to prevent malpractice and ensure fairness.
+  </p>
+</section>
 
 <script>
-/* ================= DOM ================= */
-const startDiv = document.getElementById("start");
-const testDiv = document.getElementById("test");
-const loadingDiv = document.getElementById("loading");
-const resultDiv = document.getElementById("result");
-const questionBox = document.getElementById("questionBox");
+lucide.createIcons();
 
-const nameInput = document.getElementById("nameInput");
-const patternSelect = document.getElementById("patternSelect");
-const passwordInput = document.getElementById("passwordInput");
-
-const startBtn = document.getElementById("startBtn");
-const nextBtn = document.getElementById("nextBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-const resultText = document.getElementById("resultText");
-
-/* ================= STATE ================= */
-let examStarted = false;
-let studentName = "";
-let pattern = "";
-let questions = [];
-let index = 0;
-let answers = [];
-
-/* ================= SECURITY ================= */
-function endTest(reason) {
-  if (!examStarted) return;
-  examStarted = false;
-  document.body.innerHTML = `
-    <div class="h-screen flex items-center justify-center text-center">
-      <div>
-        <h1 class="text-2xl font-bold text-red-600">Test Ended</h1>
-        <p class="mt-2">${reason}</p>
-      </div>
-    </div>`;
+/* NAV */
+function toggleMenu() {
+  mobileMenu.classList.toggle("hidden");
+}
+function showSection(id) {
+  ["home","test","about"].forEach(s => document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  mobileMenu.classList.add("hidden");
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (examStarted && document.hidden) endTest("You left the test");
-});
-
-window.addEventListener("blur", () => {
-  if (examStarted) endTest("Focus lost");
-});
-
-document.addEventListener("fullscreenchange", () => {
-  if (examStarted && !document.fullscreenElement)
-    endTest("Fullscreen exited");
-});
-
-document.addEventListener("copy", e => e.preventDefault());
-document.addEventListener("contextmenu", e => e.preventDefault());
-
-/* ================= QUESTIONS ================= */
+/* DATA */
 const PASSWORDS = { A:"alpha123", B:"beta123", C:"gamma123" };
+const SECOND_PASS = "choice2ellen";
 
 const QUESTION_BANK = {
   A:[
@@ -145,81 +172,91 @@ const QUESTION_BANK = {
   ]
 };
 
-/* ================= FLOW ================= */
-startBtn.onclick = () => {
+/* STATE */
+let studentName, pattern, questions, index=0, answers=[], examStarted=false;
+
+/* LOGIN */
+function verifyLogin() {
   studentName = nameInput.value.trim();
   pattern = patternSelect.value;
-
   if (!studentName || !pattern || PASSWORDS[pattern] !== passwordInput.value)
     return alert("Invalid details");
+  login.classList.add("hidden");
+  rules.classList.remove("hidden");
+}
 
+/* START */
+function startExam() {
+  rules.classList.add("hidden");
+  exam.classList.remove("hidden");
   examStarted = true;
-  questions = QUESTION_BANK[pattern];
   index = 0;
   answers = [];
-
+  questions = [...QUESTION_BANK[pattern]].sort(()=>Math.random()-0.5);
   document.documentElement.requestFullscreen().catch(()=>{});
-  startDiv.classList.add("hidden");
-  testDiv.classList.remove("hidden");
   renderQuestion();
-};
+}
 
+/* SECURITY */
+function failTest(reason){
+  examStarted=false;
+  document.exitFullscreen().catch(()=>{});
+  exam.classList.add("hidden");
+  failed.classList.remove("hidden");
+}
+
+document.addEventListener("visibilitychange",()=>examStarted&&document.hidden&&failTest());
+window.addEventListener("blur",()=>examStarted&&failTest());
+document.addEventListener("fullscreenchange",()=>examStarted&&!document.fullscreenElement&&failTest());
+
+/* QUESTIONS */
 function renderQuestion(){
   const q = questions[index];
   questionBox.innerHTML =
-    `<p class="mb-4 font-semibold">${q.q}</p>` +
-    q.options.map(o =>
-      `<label class="block mb-2">
+    `<p class="font-semibold mb-3">${q.q}</p>` +
+    q.options.map(o=>`
+      <label class="block mb-2">
         <input type="radio" name="ans" value="${o}"> ${o}
       </label>`).join("");
 }
 
-nextBtn.onclick = () => {
-  const sel = document.querySelector("input[name='ans']:checked");
-  if (!sel) return alert("Select an option");
+function nextQuestion(){
+  const sel=document.querySelector("input[name='ans']:checked");
+  if(!sel) return alert("Select an option");
   answers.push(sel.value);
   index++;
-
-  if (index >= questions.length) submitExam();
-  else renderQuestion();
-};
-
-/* ================= SUBMIT ================= */
-function submitExam(){
-  examStarted = false; // 🔥 SECURITY OFF
-  document.exitFullscreen().catch(()=>{});
-
-  testDiv.classList.add("hidden");
-  loadingDiv.classList.remove("hidden");
-
-  setTimeout(showResult, 3000); // ⏳ loading delay
+  index>=questions.length?showResult():renderQuestion();
 }
 
+/* SECOND CHANCE */
+function secondChance(){
+  if(secondPass.value!==SECOND_PASS) return alert("Wrong password");
+  location.reload();
+}
+
+/* RESULT */
 function showResult(){
-  loadingDiv.classList.add("hidden");
-  resultDiv.classList.remove("hidden");
-
+  examStarted=false;
+  document.exitFullscreen().catch(()=>{});
+  exam.classList.add("hidden");
+  result.classList.remove("hidden");
   const score = answers.filter((a,i)=>a===questions[i].answer).length;
-  resultText.textContent = `${studentName} — Score: ${score}/${questions.length}`;
+  resultText.textContent = `${studentName} — Score ${score}/${questions.length}`;
 }
 
-/* ================= PDF ================= */
-downloadBtn.onclick = () => {
+/* PDF */
+function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
-  let y = 10;
-
-  pdf.text(`Name: ${studentName}`,10,y); y+=8;
-  pdf.text(`Pattern: ${pattern}`,10,y); y+=10;
-
+  let y=10;
+  pdf.text(`Name: ${studentName}`,10,y); y+=10;
   questions.forEach((q,i)=>{
     pdf.text(`Q${i+1}: ${q.q}`,10,y); y+=6;
-    pdf.text(`Your Answer: ${answers[i]}`,10,y); y+=6;
-    pdf.text(`Correct Answer: ${q.answer}`,10,y); y+=8;
+    pdf.text(`Your: ${answers[i]}`,10,y); y+=6;
+    pdf.text(`Correct: ${q.answer}`,10,y); y+=8;
   });
-
-  pdf.save(`${studentName}_Xamplore_Result.pdf`);
-};
+  pdf.save("Xamplore_Result.pdf");
+}
 </script>
 
 </body>

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Online Exam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Disable text selection */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Disable right-click */
+        html, body {
+            touch-action: manipulation;
+        }
+        
+        /* Fullscreen styles */
+        :fullscreen {
+            background-color: white;
+        }
+        
+        :-webkit-full-screen {
+            background-color: white;
+        }
+        
+        :-moz-full-screen {
+            background-color: white;
+        }
+        
+        /* Timer animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50 font-sans">
+    <div id="app" class="min-h-full">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="h-screen flex flex-col justify-center items-center p-4">
+            <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Secure Online Exam</h1>
+                    <p class="text-gray-600">Enter your details to begin the test</p>
+                </div>
+                
+                <form id="welcomeForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input type="text" id="studentName" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter your full name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Question Pattern</label>
+                        <select id="questionPattern" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select a pattern</option>
+                            <option value="A">Pattern A</option>
+                            <option value="B">Pattern B</option>
+                            <option value="C">Pattern C</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    <strong>Important:</strong> The test will end automatically if you switch tabs, minimize window, or exit fullscreen mode.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Start Exam
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Exam Screen (Hidden Initially) -->
+        <div id="examScreen" class="h-screen hidden flex-col">
+            <!-- Header -->
+            <div class="bg-white border-b shadow-sm py-4 px-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800" id="examTitle">Exam in Progress</h2>
+                    <p class="text-gray-600 text-sm">Student: <span id="currentStudentName"></span></p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-red-50 text-red-700 px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span id="timer" class="font-bold">30:00</span>
+                    </div>
+                    <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg">
+                        Question: <span id="currentQuestion">1</span>/<span id="totalQuestions">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exam Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="questionsContainer" class="max-w-3xl mx-auto">
+                    <!-- Questions will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-white border-t py-4 px-6 flex justify-between">
+                <button id="prevBtn" 
+                        class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-arrow-left mr-2"></i>Previous
+                </button>
+                <div class="space-x-4">
+                    <button id="saveBtn" 
+                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <i class="fas fa-save mr-2"></i>Save Progress
+                    </button>
+                    <button id="submitBtn" 
+                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Exam
+                    </button>
+                </div>
+                <button id="nextBtn" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Next<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Submitted Screen -->
+        <div id="submittedScreen" class="h-screen hidden flex-col justify-center items-center p-4 bg-gradient-to-br from-green-50 to-blue-50">
+            <div class="max-w-md w-full text-center">
+                <div class="mb-8">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-check text-green-600 text-4xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Exam Submitted!</h2>
+                    <p class="text-gray-600">Thank you for completing the exam.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Your Score</h3>
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-blue-600 mb-2" id="finalScore">0</div>
+                        <p class="text-gray-600">out of <span id="maxScore">0</span> points</p>
+                    </div>
+                    
+                    <div class="mt-8 space-y-4 text-left">
+                        <div class="flex justify-between py-3 border-b">
+                            <span class="text-gray-600">Name:</span>
+                            <span class="font-medium" id="resultName"></span>
+                        </div>
+                        <div class="flex justify-between py-3 border-b">
+                            <span class="text-gray-600">Pattern:</span>
+                            <span class="font-medium" id="resultPattern"></span>
+                        </div>
+                        <div class="flex justify-between py-3 border-b">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="font-medium text-green-600" id="resultStatus">Completed</span>
+                        </div>
+                        <div class="flex justify-between py-3">
+                            <span class="text-gray-600">Time:</span>
+                            <span class="font-medium" id="resultTime"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-sm text-gray-500">
+                    <p>Your results have been saved. You may now close this window.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminated Screen -->
+        <div id="terminatedScreen" class="h-screen hidden flex-col justify-center items-center p-4 bg-gradient-to-br from-red-50 to-orange-50">
+            <div class="max-w-md w-full text-center">
+                <div class="mb-8">
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-4xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Exam Terminated!</h2>
+                    <p class="text-gray-600 mb-4">The exam has been terminated due to a violation of test rules.</p>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Violation Detected</h3>
+                        <ul class="text-left space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                Tab switching or window minimization detected
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                Browser focus lost or fullscreen exited
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                Attempt to copy content or use right-click
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Your Attempt</h3>
+                    <div class="space-y-3 text-left">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Name:</span>
+                            <span class="font-medium" id="terminatedName"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Pattern:</span>
+                            <span class="font-medium" id="terminatedPattern"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="font-medium text-red-600">Terminated</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Score:</span>
+                            <span class="font-medium" id="terminatedScore">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-sm text-gray-500">
+                    <p>Your attempt has been recorded as terminated. Contact your instructor if you believe this is an error.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK and Main App Script -->
+    <script type="module">
+        import { firebaseConfig } from './firebase-config.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const examScreen = document.getElementById('examScreen');
+        const submittedScreen = document.getElementById('submittedScreen');
+        const terminatedScreen = document.getElementById('terminatedScreen');
+        const welcomeForm = document.getElementById('welcomeForm');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const timerElement = document.getElementById('timer');
+        const currentQuestionElement = document.getElementById('currentQuestion');
+        const totalQuestionsElement = document.getElementById('totalQuestions');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // State variables
+        let examState = {
+            studentName: '',
+            pattern: '',
+            questions: [],
+            currentQuestionIndex: 0,
+            answers: {},
+            startTime: null,
+            endTime: null,
+            timer: null,
+            timeRemaining: 30 * 60, // 30 minutes in seconds
+            terminated: false,
+            submitted: false,
+            dailyAttemptId: null
+        };
+
+        // Anti-cheat detection
+        let cheatDetected = false;
+        let fullscreenActive = false;
+
+        // Disable right-click, copy, cut
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('copy', e => e.preventDefault());
+        document.addEventListener('cut', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+
+        // Disable text selection (except for input fields)
+        document.addEventListener('selectstart', e => {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
+
+        // Disable keyboard shortcuts for refresh, back, etc.
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+                terminateExam('Page refresh attempted');
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                terminateExam('Developer tools opened');
+            }
+            if ((e.ctrlKey && (e.key === 'u' || e.key === 'U')) || e.key === 'F12') {
+                e.preventDefault();
+                terminateExam('View source attempted');
+            }
+        });
+
+        // Anti-cheat event listeners
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && examScreen.classList.contains('hidden') === false) {
+                terminateExam('Tab/window switched');
+            }
+        });
+
+        document.addEventListener('blur', () => {
+            if (document.activeElement === document.body && examScreen.classList.contains('hidden') === false) {
+                setTimeout(() => {
+                    if (document.activeElement === document.body) {
+                        terminateExam('Browser lost focus');
+                    }
+                }, 100);
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            fullscreenActive = !fullscreenActive;
+            if (!fullscreenActive && examScreen.classList.contains('hidden') === false) {
+                terminateExam('Fullscreen exited');
+            }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (examScreen.classList.contains('hidden') === false && !examState.submitted && !examState.terminated) {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to leave? The exam will be terminated.';
+                terminateExam('Page navigation attempted');
+            }
+        });
+
+        // Prevent back button
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.go(1);
+            terminateExam('Back button pressed');
+        };
+
+        // Check daily attempt limit
+        async function checkDailyAttempt(studentName) {
+            const today = new Date().toISOString().split('T')[0];
+            const attemptId = `${studentName}_${today}`;
+            examState.dailyAttemptId = attemptId;
+            
+            const attemptRef = doc(db, 'daily_attempts', attemptId);
+            const attemptSnap = await getDoc(attemptRef);
+            
+            if (attemptSnap.exists()) {
+                alert('You have already taken an exam today. Only one attempt is allowed per day.');
+                return false;
+            }
+            
+            // Record today's attempt
+            await setDoc(attemptRef, {
+                studentName: studentName,
+                date: today,
+                timestamp: new Date().toISOString()
+            });
+            
+            return true;
+        }
+
+        // Enter fullscreen
+        async function enterFullscreen() {
+            try {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    await elem.requestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    await elem.mozRequestFullScreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    await elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    await elem.msRequestFullscreen();
+                }
+                fullscreenActive = true;
+            } catch (err) {
+                console.error('Fullscreen error:', err);
+                terminateExam('Fullscreen not allowed');
+            }
+        }
+
+        // Start exam
+        async function startExam(studentName, pattern) {
+            const canAttempt = await checkDailyAttempt(studentName);
+            if (!canAttempt) return;
+
+            examState.studentName = studentName;
+            examState.pattern = pattern;
+            examState.startTime = new Date().toISOString();
+
+            // Enter fullscreen
+            await enterFullscreen();
+
+            // Load questions
+            await loadQuestions(pattern);
+
+            // Hide welcome, show exam
+            welcomeScreen.classList.add('hidden');
+            examScreen.classList.remove('hidden');
+            
+            // Update UI
+            document.getElementById('currentStudentName').textContent = studentName;
+            document.getElementById('examTitle').textContent = `Exam - Pattern ${pattern}`;
+            
+            // Start timer
+            startTimer();
+            
+            // Display first question
+            displayCurrentQuestion();
+        }
+
+        // Load questions from Firestore
+        async function loadQuestions(pattern) {
+            try {
+                const docRef = doc(db, 'questions', pattern);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    examState.questions = docSnap.data().questions;
+                    totalQuestionsElement.textContent = examState.questions.length;
+                    
+                    // Initialize answers object
+                    examState.questions.forEach((q, index) => {
+                        examState.answers[index + 1] = {
+                            questionId: q.id,
+                            type: q.type,
+                            answer: '',
+                            points: q.points || 1
+                        };
+                    });
+                } else {
+                    alert('Questions not found for this pattern.');
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                alert('Error loading questions. Please try again.');
+            }
+        }
+
+        // Start timer
+        function startTimer() {
+            examState.timer = setInterval(() => {
+                examState.timeRemaining--;
+                
+                const minutes = Math.floor(examState.timeRemaining / 60);
+                const seconds = examState.timeRemaining % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (examState.timeRemaining <= 0) {
+                    clearInterval(examState.timer);
+                    submitExam('Time expired');
+                }
+                
+                // Warning at 5 minutes
+                if (examState.timeRemaining === 5 * 60) {
+                    showNotification('5 minutes remaining!');
+                }
+            }, 1000);
+        }
+
+        // Display current question
+        function displayCurrentQuestion() {
+            questionsContainer.innerHTML = '';
+            const question = examState.questions[examState.currentQuestionIndex];
+            currentQuestionElement.textContent = examState.currentQuestionIndex + 1;
+            
+            const questionElement = document.createElement('div');
+            questionElement.className = 'bg-white rounded-xl shadow-md p-6 mb-6';
+            
+            // Question number and points
+            const header = document.createElement('div');
+            header.className = 'flex justify-between items-center mb-4 pb-4 border-b';
+            header.innerHTML = `
+                <h3 class="text-xl font-semibold text-gray-800">Question ${examState.currentQuestionIndex + 1}</h3>
+                <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    ${question.points || 1} point${question.points !== 1 ? 's' : ''}
+                </span>
+            `;
+            questionElement.appendChild(header);
+            
+            // Question text
+            const questionText = document.createElement('div');
+            questionText.className = 'mb-6';
+            questionText.innerHTML = `
+                <p class="text-lg text-gray-700">${question.question}</p>
+            `;
+            questionElement.appendChild(questionText);
+            
+            // Answer input based on type
+            const answerSection = document.createElement('div');
+            
+            switch (question.type) {
+                case 'mcq':
+                    answerSection.innerHTML = `
+                        <div class="space-y-3">
+                            ${question.options.map((option, idx) => `
+                                <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                    <input type="radio" name="q${question.id}" value="${option}" 
+                                           class="h-5 w-5 text-blue-600" 
+                                           ${examState.answers[question.id]?.answer === option ? 'checked' : ''}>
+                                    <span class="ml-3 text-gray-700">${option}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'truefalse':
+                    answerSection.innerHTML = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="q${question.id}" value="true" 
+                                       class="h-5 w-5 text-blue-600"
+                                       ${examState.answers[question.id]?.answer === 'true' ? 'checked' : ''}>
+                                <span class="ml-3 text-gray-700">True</span>
+                            </label>
+                            <label class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="q${question.id}" value="false" 
+                                       class="h-5 w-5 text-blue-600"
+                                       ${examState.answers[question.id]?.answer === 'false' ? 'checked' : ''}>
+                                <span class="ml-3 text-gray-700">False</span>
+                            </label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'shortanswer':
+                    answerSection.innerHTML = `
+                        <div>
+                            <textarea id="shortAnswer${question.id}" 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32"
+                                      placeholder="Type your answer here...">${examState.answers[question.id]?.answer || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            questionElement.appendChild(answerSection);
+            questionsContainer.appendChild(questionElement);
+            
+            // Update navigation buttons
+            prevBtn.disabled = examState.currentQuestionIndex === 0;
+            nextBtn.textContent = examState.currentQuestionIndex === examState.questions.length - 1 ? 'Review' : 'Next';
+        }
+
+        // Save current answer
+        function saveCurrentAnswer() {
+            const question = examState.questions[examState.currentQuestionIndex];
+            
+            switch (question.type) {
+                case 'mcq':
+                case 'truefalse':
+                    const selectedRadio = document.querySelector(`input[name="q${question.id}"]:checked`);
+                    if (selectedRadio) {
+                        examState.answers[question.id].answer = selectedRadio.value;
+                    }
+                    break;
+                    
+                case 'shortanswer':
+                    const textarea = document.getElementById(`shortAnswer${question.id}`);
+                    if (textarea) {
+                        examState.answers[question.id].answer = textarea.value.trim();
+                    }
+                    break;
+            }
+            
+            showNotification('Answer saved!');
+        }
+
+        // Calculate score
+        function calculateScore() {
+            let score = 0;
+            let maxScore = 0;
+            
+            examState.questions.forEach(question => {
+                maxScore += question.points || 1;
+                const userAnswer = examState.answers[question.id]?.answer;
+                
+                if (userAnswer) {
+                    if (question.type === 'shortanswer') {
+                        // Case insensitive comparison for short answers
+                        if (userAnswer.toLowerCase() === question.correctAnswer.toLowerCase()) {
+                            score += question.points || 1;
+                        }
+                    } else {
+                        if (userAnswer === question.correctAnswer.toString()) {
+                            score += question.points || 1;
+                        }
+                    }
+                }
+            });
+            
+            return { score, maxScore };
+        }
+
+        // Submit exam
+        async function submitExam(reason = 'Normal submission') {
+            if (examState.submitted) return;
+            
+            clearInterval(examState.timer);
+            examState.endTime = new Date().toISOString();
+            examState.submitted = true;
+            
+            // Save final answers
+            saveCurrentAnswer();
+            
+            // Calculate score
+            const { score, maxScore } = calculateScore();
+            
+            // Prepare submission data
+            const submission = {
+                studentName: examState.studentName,
+                pattern: examState.pattern,
+                answers: examState.answers,
+                score: score,
+                maxScore: maxScore,
+                status: reason.includes('Terminated') || examState.terminated ? 'terminated' : 'completed',
+                startTime: examState.startTime,
+                endTime: examState.endTime,
+                timestamp: new Date().toISOString(),
+                terminationReason: examState.terminated ? reason : null
+            };
+            
+            try {
+                // Save to Firestore
+                const submissionRef = doc(collection(db, 'attempts'));
+                await setDoc(submissionRef, submission);
+                
+                // Show appropriate screen
+                examScreen.classList.add('hidden');
+                
+                if (examState.terminated || reason.includes('Terminated')) {
+                    document.getElementById('terminatedName').textContent = examState.studentName;
+                    document.getElementById('terminatedPattern').textContent = examState.pattern;
+                    document.getElementById('terminatedScore').textContent = `${score}/${maxScore}`;
+                    terminatedScreen.classList.remove('hidden');
+                } else {
+                    document.getElementById('finalScore').textContent = score;
+                    document.getElementById('maxScore').textContent = maxScore;
+                    document.getElementById('resultName').textContent = examState.studentName;
+                    document.getElementById('resultPattern').textContent = examState.pattern;
+                    document.getElementById('resultTime').textContent = new Date().toLocaleTimeString();
+                    submittedScreen.classList.remove('hidden');
+                }
+                
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            } catch (error) {
+                console.error('Error submitting exam:', error);
+                alert('Error submitting exam. Please try again.');
+            }
+        }
+
+        // Terminate exam
+        function terminateExam(reason) {
+            if (cheatDetected || examState.submitted) return;
+            
+            cheatDetected = true;
+            examState.terminated = true;
+            showNotification(`Exam terminated: ${reason}`);
+            submitExam(`Terminated: ${reason}`);
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-y-0';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Event Listeners
+        welcomeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentName = document.getElementById('studentName').value.trim();
+            const pattern = document.getElementById('questionPattern').value;
+            
+            if (!studentName || !pattern) {
+                alert('Please enter your name and select a pattern.');
+                return;
+            }
+            
+            await startExam(studentName, pattern);
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (examState.currentQuestionIndex > 0) {
+                saveCurrentAnswer();
+                examState.currentQuestionIndex--;
+                displayCurrentQuestion();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            saveCurrentAnswer();
+            
+            if (examState.currentQuestionIndex < examState.questions.length - 1) {
+                examState.currentQuestionIndex++;
+                displayCurrentQuestion();
+            } else {
+                // Show confirmation for submission
+                if (confirm('You have reached the end of the exam. Do you want to submit now?')) {
+                    submitExam();
+                }
+            }
+        });
+
+        saveBtn.addEventListener('click', saveCurrentAnswer);
+
+        submitBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to submit the exam? This action cannot be undone.')) {
+                submitExam();
+            }
+        });
+
+        // Initialize
+        console.log('Exam system initialized');
+    </script>
+</body>
+</html>

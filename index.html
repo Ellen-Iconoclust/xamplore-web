@@ -165,16 +165,18 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
       <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
       <div class="relative">
         <input
-          id="secondPass"
-          type="password"
-          readonly
-          onfocus="this.removeAttribute('readonly');"
-          onblur="this.setAttribute('readonly', true);"
-          class="w-full p-2 mt-3 border rounded bg-gray-50"
-          placeholder="Second Chance Code"
-          autocapitalize="off"
-          spellcheck="false"
-        />
+  id="secondPass"
+  type="password"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  inputmode="none"
+  readonly
+  onfocus="this.removeAttribute('readonly');"
+  class="w-full p-2 mt-3 border rounded"
+  placeholder="Second Chance Code"
+/>
       </div>
       <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 text-white p-2 rounded">
         Retry Exam

@@ -11,34 +11,26 @@
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- Lucide Icons -->
+<!-- Lucide -->
 <script src="https://unpkg.com/lucide@latest"></script>
 
-<!-- Google Fonts -->
+<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
-* {
-  user-select: none;
-  -webkit-user-select: none;
-}
-body {
-  font-family: 'Poppins', sans-serif;
-}
-.brand {
-  font-family: 'Montserrat', sans-serif;
-}
+* { user-select:none; -webkit-user-select:none; }
+body { font-family:'Poppins',sans-serif; }
+.brand { font-family:'Montserrat',sans-serif; }
 </style>
 </head>
 
-<body class="bg-white text-gray-800 min-h-screen">
+<body class="bg-white text-gray-800 min-h-screen flex flex-col">
 
-<!-- NAVBAR -->
+<!-- NAV -->
 <nav class="border-b shadow-sm">
   <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
     <div class="flex items-center gap-2 brand text-2xl font-extrabold text-emerald-600">
-      <i data-lucide="graduation-cap"></i>
-      Xamplore
+      <i data-lucide="graduation-cap"></i> Xamplore
     </div>
 
     <div class="hidden md:flex gap-8 font-semibold">
@@ -53,26 +45,63 @@ body {
   </div>
 
   <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
-    <button class="block" onclick="showSection('home')">Home</button>
-    <button class="block" onclick="showSection('test')">Test</button>
-    <button class="block" onclick="showSection('about')">About</button>
+    <button onclick="showSection('home')" class="block">Home</button>
+    <button onclick="showSection('test')" class="block">Test</button>
+    <button onclick="showSection('about')" class="block">About</button>
   </div>
 </nav>
 
 <!-- HOME -->
 <section id="home" class="py-20 text-center">
-  <h1 class="text-5xl font-extrabold brand text-emerald-600">Smarter Exams</h1>
-  <p class="mt-4 text-xl font-semibold">Built for SRCAS Students</p>
+  <h1 class="text-4xl font-extrabold brand text-emerald-600">
+    Smarter Exams
+  </h1>
+  <p class="mt-3 text-xl font-semibold">Built for SRCAS Students</p>
+
   <p class="mt-6 max-w-xl mx-auto text-gray-600">
-    Xamplore ensures integrity, focus, and fairness in online examinations with secure exam flow.
+    Xamplore is a secure online examination platform designed to
+    reduce malpractice and ensure fair evaluation.
   </p>
+
+  <!-- FEATURES -->
+  <div class="mt-16 max-w-5xl mx-auto grid md:grid-cols-3 gap-8 px-6">
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Secure Environment</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Fullscreen enforcement, tab monitoring, and anti-copy protections.
+      </p>
+    </div>
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Randomized Exams</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Questions and options are randomized for every student.
+      </p>
+    </div>
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Instant Reports</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Downloadable PDFs with full answer transparency.
+      </p>
+    </div>
+  </div>
+
+  <!-- WHY -->
+  <div class="mt-20 max-w-3xl mx-auto px-6">
+    <h2 class="text-2xl font-bold text-emerald-600">
+      Why Xamplore Was Created
+    </h2>
+    <p class="mt-4 text-gray-600">
+      Traditional online exams are easy to exploit. Xamplore was built
+      to provide a cleaner, stricter, and more disciplined testing
+      environment using only browser-level technologies.
+    </p>
+  </div>
 </section>
 
 <!-- TEST -->
 <section id="test" class="hidden py-16">
   <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-xl">
 
-    <!-- LOGIN -->
     <div id="login">
       <h2 class="text-2xl font-bold mb-4 text-emerald-600">Exam Login</h2>
       <input id="nameInput" class="w-full p-2 mb-3 border rounded" placeholder="Your Name">
@@ -88,21 +117,19 @@ body {
       </button>
     </div>
 
-    <!-- RULES -->
     <div id="rules" class="hidden">
       <h2 class="text-xl font-bold text-emerald-600 mb-3">Rules & Regulations</h2>
       <ul class="list-disc pl-5 text-sm space-y-2">
         <li>No tab switching</li>
         <li>No exiting fullscreen</li>
         <li>No screenshots or copy</li>
-        <li>Violation ends test immediately</li>
+        <li>Violations end the test</li>
       </ul>
       <button onclick="startExam()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
         I Agree & Start Exam
       </button>
     </div>
 
-    <!-- TEST -->
     <div id="exam" class="hidden">
       <div id="questionBox"></div>
       <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
@@ -110,17 +137,14 @@ body {
       </button>
     </div>
 
-    <!-- FAILED -->
     <div id="failed" class="hidden text-center">
       <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
-      <p class="text-sm mt-2">Enter second chance password</p>
       <input id="secondPass" class="w-full p-2 mt-3 border rounded" placeholder="Second Chance Password">
       <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 text-white p-2 rounded">
         Retry Exam
       </button>
     </div>
 
-    <!-- RESULT -->
     <div id="result" class="hidden text-center">
       <h2 class="text-2xl font-bold text-emerald-600">Test Completed</h2>
       <p id="resultText" class="mt-3"></p>
@@ -136,28 +160,35 @@ body {
 <section id="about" class="hidden py-20 text-center">
   <h2 class="text-3xl font-bold text-emerald-600">About Xamplore</h2>
   <p class="mt-4 max-w-xl mx-auto text-gray-600">
-    Xamplore is a secure online examination platform designed to prevent malpractice and ensure fairness.
+    A browser-based secure examination system built for academic integrity.
   </p>
 </section>
+
+<!-- FOOTER -->
+<footer class="mt-auto border-t py-4 text-center text-sm text-gray-600">
+  Made by
+  <a href="https://ellen-dev.vercel.app" target="_blank"
+     class="text-emerald-600 font-semibold hover:underline">
+    Ellen Iconoclust
+  </a>
+</footer>
 
 <script>
 lucide.createIcons();
 
 /* NAV */
-function toggleMenu() {
-  mobileMenu.classList.toggle("hidden");
-}
-function showSection(id) {
-  ["home","test","about"].forEach(s => document.getElementById(s).classList.add("hidden"));
+function toggleMenu(){ mobileMenu.classList.toggle("hidden"); }
+function showSection(id){
+  ["home","test","about"].forEach(s=>document.getElementById(s).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
   mobileMenu.classList.add("hidden");
 }
 
 /* DATA */
-const PASSWORDS = { A:"alpha123", B:"beta123", C:"gamma123" };
-const SECOND_PASS = "choice2ellen";
+const PASSWORDS={A:"alpha123",B:"beta123",C:"gamma123"};
+const SECOND_PASS="choice2ellen";
 
-const QUESTION_BANK = {
+const QUESTION_BANK={
   A:[
     {q:"Which keyword stores constants in JavaScript?",options:["var","let","const","static"],answer:"const"},
     {q:"Which HTML tag is used for navigation?",options:["div","nav","header","section"],answer:"nav"}
@@ -173,53 +204,54 @@ const QUESTION_BANK = {
 };
 
 /* STATE */
-let studentName, pattern, questions, index=0, answers=[], examStarted=false;
+let studentName,pattern,questions,index=0,answers=[],examStarted=false;
 
 /* LOGIN */
-function verifyLogin() {
-  studentName = nameInput.value.trim();
-  pattern = patternSelect.value;
-  if (!studentName || !pattern || PASSWORDS[pattern] !== passwordInput.value)
+function verifyLogin(){
+  studentName=nameInput.value.trim();
+  pattern=patternSelect.value;
+  if(!studentName||!pattern||PASSWORDS[pattern]!==passwordInput.value)
     return alert("Invalid details");
   login.classList.add("hidden");
   rules.classList.remove("hidden");
 }
 
 /* START */
-function startExam() {
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+function startExam(){
   rules.classList.add("hidden");
   exam.classList.remove("hidden");
-  examStarted = true;
-  index = 0;
-  answers = [];
-  questions = [...QUESTION_BANK[pattern]].sort(()=>Math.random()-0.5);
+  examStarted=true;
+  index=0;
+  answers=[];
+  questions=shuffle([...QUESTION_BANK[pattern]])
+    .map(q=>({...q,options:shuffle([...q.options])}));
   document.documentElement.requestFullscreen().catch(()=>{});
   renderQuestion();
 }
 
 /* SECURITY */
-function failTest(reason){
+function failTest(){
   examStarted=false;
   document.exitFullscreen().catch(()=>{});
   exam.classList.add("hidden");
   failed.classList.remove("hidden");
 }
-
 document.addEventListener("visibilitychange",()=>examStarted&&document.hidden&&failTest());
 window.addEventListener("blur",()=>examStarted&&failTest());
 document.addEventListener("fullscreenchange",()=>examStarted&&!document.fullscreenElement&&failTest());
 
 /* QUESTIONS */
 function renderQuestion(){
-  const q = questions[index];
-  questionBox.innerHTML =
-    `<p class="font-semibold mb-3">${q.q}</p>` +
+  const q=questions[index];
+  questionBox.innerHTML=
+    `<p class="font-semibold mb-3">${q.q}</p>`+
     q.options.map(o=>`
       <label class="block mb-2">
         <input type="radio" name="ans" value="${o}"> ${o}
       </label>`).join("");
 }
-
 function nextQuestion(){
   const sel=document.querySelector("input[name='ans']:checked");
   if(!sel) return alert("Select an option");
@@ -228,7 +260,7 @@ function nextQuestion(){
   index>=questions.length?showResult():renderQuestion();
 }
 
-/* SECOND CHANCE */
+/* SECOND */
 function secondChance(){
   if(secondPass.value!==SECOND_PASS) return alert("Wrong password");
   location.reload();
@@ -240,21 +272,28 @@ function showResult(){
   document.exitFullscreen().catch(()=>{});
   exam.classList.add("hidden");
   result.classList.remove("hidden");
-  const score = answers.filter((a,i)=>a===questions[i].answer).length;
-  resultText.textContent = `${studentName} — Score ${score}/${questions.length}`;
+  const score=answers.filter((a,i)=>a===questions[i].answer).length;
+  resultText.textContent=
+    `${studentName} — Score ${score}/${questions.length}`;
 }
 
 /* PDF */
 function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF();
   let y=10;
-  pdf.text(`Name: ${studentName}`,10,y); y+=10;
+  const score=answers.filter((a,i)=>a===questions[i].answer).length;
+
+  pdf.text(`Student: ${studentName}`,10,y); y+=8;
+  pdf.text(`Pattern: ${pattern}`,10,y); y+=8;
+  pdf.text(`Score: ${score}/${questions.length}`,10,y); y+=10;
+
   questions.forEach((q,i)=>{
     pdf.text(`Q${i+1}: ${q.q}`,10,y); y+=6;
-    pdf.text(`Your: ${answers[i]}`,10,y); y+=6;
+    pdf.text(`Answer: ${answers[i]}`,10,y); y+=6;
     pdf.text(`Correct: ${q.answer}`,10,y); y+=8;
   });
+
   pdf.save("Xamplore_Result.pdf");
 }
 </script>

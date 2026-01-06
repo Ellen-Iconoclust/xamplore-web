@@ -1,638 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Exam Platform</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: white;
-            z-index: 9999;
-            overflow-y: auto;
-        }
-        
-        .disable-select {
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-        
-        .disable-context-menu {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        
-        .question-container {
-            transition: all 0.3s ease;
-        }
-        
-        .question-container:hover {
-            transform: translateY(-2px);
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Xamplore – Secure Exam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+</style>
 </head>
-<body class="bg-gray-50 min-h-screen disable-select">
-    <!-- Main Container -->
-    <div id="app" class="container mx-auto px-4 py-8">
-        <!-- Welcome Screen -->
-        <div id="welcomeScreen" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Secure Exam Platform</h1>
-                <p class="text-gray-600">Enter your details to begin the examination</p>
-            </div>
-            
-            <form id="studentForm" class="space-y-6">
-                <div>
-                    <label for="studentName" class="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name *
-                    </label>
-                    <input 
-                        type="text" 
-                        id="studentName" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        placeholder="Enter your full name"
-                    >
-                </div>
-                
-                <div>
-                    <label for="patternSelect" class="block text-sm font-medium text-gray-700 mb-2">
-                        Exam Pattern *
-                    </label>
-                    <select 
-                        id="patternSelect" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    >
-                        <option value="">Select a pattern</option>
-                        <option value="A">Pattern A (Basic Computing)</option>
-                        <option value="B">Pattern B (General Knowledge)</option>
-                        <option value="C">Pattern C (Mixed Topics)</option>
-                    </select>
-                </div>
-                
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700">
-                                <strong>Important:</strong> Do not switch tabs, exit fullscreen, or reload the page during the exam. The test will automatically terminate on any violation.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <button 
-                    type="submit"
-                    id="startExamBtn"
-                    class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
-                >
-                    Start Exam
-                </button>
-            </form>
-            
-            <div class="mt-8 pt-6 border-t border-gray-200">
-                <h3 class="text-sm font-medium text-gray-700 mb-2">Exam Rules:</h3>
-                <ul class="text-sm text-gray-600 space-y-1">
-                    <li>• One attempt per student per day</li>
-                    <li>• Fullscreen mode is required</li>
-                    <li>• No tab switching allowed</li>
-                    <li>• No right-click, copy, or paste</li>
-                    <li>• Time limit: None (complete at your own pace)</li>
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Exam Screen (Hidden by default) -->
-        <div id="examScreen" class="fullscreen hidden">
-            <div class="max-w-4xl mx-auto p-6">
-                <!-- Header -->
-                <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 id="examTitle" class="text-2xl font-bold text-gray-800"></h2>
-                        <p id="studentInfo" class="text-gray-600"></p>
-                    </div>
-                    <div class="text-right">
-                        <div id="scoreDisplay" class="text-lg font-semibold text-blue-600">Score: 0</div>
-                        <div id="statusDisplay" class="text-sm text-green-600">In Progress</div>
-                    </div>
-                </div>
-                
-                <!-- Questions Container -->
-                <div id="questionsContainer" class="space-y-8"></div>
-                
-                <!-- Submit Button -->
-                <div class="mt-12 pt-8 border-t border-gray-200">
-                    <button 
-                        id="submitExamBtn"
-                        class="w-full md:w-auto bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition text-lg"
-                    >
-                        Submit Exam
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Result Screens -->
-        <div id="resultScreen" class="fullscreen hidden">
-            <div class="max-w-md mx-auto h-full flex items-center justify-center p-6">
-                <div class="bg-white rounded-xl shadow-xl p-8 text-center w-full">
-                    <div id="resultIcon" class="text-6xl mb-6"></div>
-                    <h2 id="resultTitle" class="text-3xl font-bold mb-4"></h2>
-                    <p id="resultMessage" class="text-gray-600 mb-6"></p>
-                    <div id="resultDetails" class="mb-8"></div>
-                    <button 
-                        id="returnHomeBtn"
-                        class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
-                    >
-                        Return to Home
-                    </button>
-                </div>
-            </div>
-        </div>
+
+<body class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-800">
+
+<nav class="bg-white shadow px-6 py-4">
+  <h1 class="text-2xl font-bold text-emerald-700">Xamplore</h1>
+</nav>
+
+<section class="text-center py-10">
+  <h2 class="text-3xl font-extrabold text-emerald-800">
+    Smarter Exams for Smarter Students
+  </h2>
+  <p class="text-emerald-600 mt-2">Exam System for SRCAS</p>
+</section>
+
+<div class="flex justify-center pb-16">
+  <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-xl">
+
+    <!-- START -->
+    <div id="start">
+      <input id="nameInput" class="w-full p-2 mb-3 border rounded" placeholder="Your Name">
+      <select id="patternSelect" class="w-full p-2 mb-3 border rounded">
+        <option value="">Select Pattern</option>
+        <option value="A">Pattern A</option>
+        <option value="B">Pattern B</option>
+        <option value="C">Pattern C</option>
+      </select>
+      <input id="passwordInput" type="password" class="w-full p-2 mb-4 border rounded" placeholder="Pattern Password">
+      <button id="startBtn" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        Start Test
+      </button>
     </div>
 
-    <script type="module">
-        import { QUESTION_BANK, ATTEMPTS, addAttempt, hasAttemptedToday, calculateScore } from './questions.js';
-        
-        class ExamSystem {
-            constructor() {
-                this.currentStudent = null;
-                this.currentPattern = null;
-                this.answers = {};
-                this.isFullscreen = false;
-                this.isTerminated = false;
-                this.cheatDetected = false;
-                
-                this.initializeElements();
-                this.bindEvents();
-                this.checkSession();
-            }
-            
-            initializeElements() {
-                this.welcomeScreen = document.getElementById('welcomeScreen');
-                this.examScreen = document.getElementById('examScreen');
-                this.resultScreen = document.getElementById('resultScreen');
-                this.studentForm = document.getElementById('studentForm');
-                this.studentNameInput = document.getElementById('studentName');
-                this.patternSelect = document.getElementById('patternSelect');
-                this.startExamBtn = document.getElementById('startExamBtn');
-                this.questionsContainer = document.getElementById('questionsContainer');
-                this.submitExamBtn = document.getElementById('submitExamBtn');
-                this.returnHomeBtn = document.getElementById('returnHomeBtn');
-                this.examTitle = document.getElementById('examTitle');
-                this.studentInfo = document.getElementById('studentInfo');
-                this.scoreDisplay = document.getElementById('scoreDisplay');
-                this.statusDisplay = document.getElementById('statusDisplay');
-                this.resultIcon = document.getElementById('resultIcon');
-                this.resultTitle = document.getElementById('resultTitle');
-                this.resultMessage = document.getElementById('resultMessage');
-                this.resultDetails = document.getElementById('resultDetails');
-            }
-            
-            bindEvents() {
-                this.studentForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
-                this.submitExamBtn.addEventListener('click', () => this.submitExam());
-                this.returnHomeBtn.addEventListener('click', () => this.returnToHome());
-                
-                // Anti-cheat event listeners
-                document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
-                document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
-                document.addEventListener('contextmenu', (e) => e.preventDefault());
-                document.addEventListener('copy', (e) => e.preventDefault());
-                document.addEventListener('cut', (e) => e.preventDefault());
-                document.addEventListener('paste', (e) => e.preventDefault());
-                window.addEventListener('blur', () => this.handleWindowBlur());
-                window.addEventListener('beforeunload', (e) => this.handleBeforeUnload(e));
-                window.addEventListener('popstate', () => this.handleNavigation());
-                window.addEventListener('pagehide', () => this.terminateExam('Page hidden'));
-                document.addEventListener('keydown', (e) => this.handleKeyEvents(e));
-            }
-            
-            checkSession() {
-                const session = sessionStorage.getItem('exam_session');
-                if (session) {
-                    try {
-                        const data = JSON.parse(session);
-                        if (data.started && !data.completed) {
-                            // Resume existing session
-                            this.startExam(data.name, data.pattern);
-                        }
-                    } catch (e) {
-                        sessionStorage.removeItem('exam_session');
-                    }
-                }
-            }
-            
-            async handleFormSubmit(e) {
-                e.preventDefault();
-                
-                const name = this.studentNameInput.value.trim();
-                const pattern = this.patternSelect.value;
-                
-                if (!name || !pattern) {
-                    alert('Please enter your name and select a pattern');
-                    return;
-                }
-                
-                // Check if student has already attempted today
-                if (hasAttemptedToday(name)) {
-                    this.showResultScreen('blocked', {
-                        name,
-                        message: 'You have already attempted the exam today. Please try again tomorrow.'
-                    });
-                    return;
-                }
-                
-                // Confirm before starting
-                if (!confirm('Are you ready to start the exam? Remember: Do not switch tabs or exit fullscreen.')) {
-                    return;
-                }
-                
-                this.startExam(name, pattern);
-            }
-            
-            async startExam(name, pattern) {
-                this.currentStudent = name;
-                this.currentPattern = pattern;
-                this.answers = {};
-                
-                // Save session
-                sessionStorage.setItem('exam_session', JSON.stringify({
-                    name,
-                    pattern,
-                    started: true,
-                    completed: false,
-                    timestamp: Date.now()
-                }));
-                
-                // Enter fullscreen
-                await this.enterFullscreen();
-                
-                // Load questions
-                this.loadQuestions();
-                
-                // Show exam screen
-                this.welcomeScreen.classList.add('hidden');
-                this.examScreen.classList.remove('hidden');
-                this.resultScreen.classList.add('hidden');
-                
-                // Update headers
-                this.examTitle.textContent = `Exam - Pattern ${pattern}`;
-                this.studentInfo.textContent = `Student: ${name}`;
-                
-                // Start monitoring
-                this.startMonitoring();
-            }
-            
-            loadQuestions() {
-                const questions = QUESTION_BANK[this.currentPattern];
-                if (!questions) {
-                    alert('Invalid pattern selected');
-                    this.returnToHome();
-                    return;
-                }
-                
-                this.questionsContainer.innerHTML = '';
-                
-                questions.forEach((q, index) => {
-                    const questionEl = this.createQuestionElement(q, index + 1);
-                    this.questionsContainer.appendChild(questionEl);
-                });
-            }
-            
-            createQuestionElement(question, number) {
-                const div = document.createElement('div');
-                div.className = 'question-container bg-white rounded-lg shadow p-6';
-                div.dataset.questionId = question.id;
-                
-                let optionsHtml = '';
-                
-                if (question.type === 'MCQ') {
-                    question.options.forEach((option, idx) => {
-                        const optionId = `q${question.id}_opt${idx}`;
-                        optionsHtml += `
-                            <div class="flex items-center p-3 hover:bg-gray-50 rounded transition">
-                                <input 
-                                    type="radio" 
-                                    id="${optionId}"
-                                    name="question_${question.id}"
-                                    value="${option}"
-                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                    ${this.answers[question.id] === option ? 'checked' : ''}
-                                >
-                                <label for="${optionId}" class="ml-3 block text-gray-700 cursor-pointer">
-                                    ${option}
-                                </label>
-                            </div>
-                        `;
-                    });
-                } else if (question.type === 'TrueFalse') {
-                    optionsHtml = `
-                        <div class="flex items-center p-3 hover:bg-gray-50 rounded transition">
-                            <input 
-                                type="radio" 
-                                id="q${question.id}_true"
-                                name="question_${question.id}"
-                                value="True"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                ${this.answers[question.id] === 'True' ? 'checked' : ''}
-                            >
-                            <label for="q${question.id}_true" class="ml-3 block text-gray-700 cursor-pointer">
-                                True
-                            </label>
-                        </div>
-                        <div class="flex items-center p-3 hover:bg-gray-50 rounded transition">
-                            <input 
-                                type="radio" 
-                                id="q${question.id}_false"
-                                name="question_${question.id}"
-                                value="False"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                ${this.answers[question.id] === 'False' ? 'checked' : ''}
-                            >
-                            <label for="q${question.id}_false" class="ml-3 block text-gray-700 cursor-pointer">
-                                False
-                            </label>
-                        </div>
-                    `;
-                }
-                
-                div.innerHTML = `
-                    <div class="mb-4">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-800">
-                                Question ${number} (${question.marks} mark${question.marks > 1 ? 's' : ''})
-                            </h3>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                                ${question.type}
-                            </span>
-                        </div>
-                        <p class="mt-2 text-gray-700">${question.question}</p>
-                    </div>
-                    <div class="space-y-2" onclick="event.stopPropagation()">
-                        ${optionsHtml}
-                    </div>
-                `;
-                
-                // Add event listeners for answer selection
-                const inputs = div.querySelectorAll('input[type="radio"]');
-                inputs.forEach(input => {
-                    input.addEventListener('change', (e) => {
-                        this.answers[question.id] = e.target.value;
-                        this.updateScoreDisplay();
-                    });
-                });
-                
-                return div;
-            }
-            
-            updateScoreDisplay() {
-                const score = calculateScore(this.answers, this.currentPattern);
-                this.scoreDisplay.textContent = `Score: ${score}`;
-            }
-            
-            async enterFullscreen() {
-                try {
-                    const elem = document.documentElement;
-                    if (elem.requestFullscreen) {
-                        await elem.requestFullscreen();
-                    } else if (elem.webkitRequestFullscreen) {
-                        await elem.webkitRequestFullscreen();
-                    } else if (elem.msRequestFullscreen) {
-                        await elem.msRequestFullscreen();
-                    }
-                    this.isFullscreen = true;
-                } catch (err) {
-                    console.error('Fullscreen error:', err);
-                    this.terminateExam('Fullscreen not supported');
-                }
-            }
-            
-            exitFullscreen() {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-            }
-            
-            startMonitoring() {
-                this.monitoringInterval = setInterval(() => {
-                    if (!document.fullscreenElement && this.isFullscreen && !this.isTerminated) {
-                        this.terminateExam('Fullscreen exited');
-                    }
-                }, 1000);
-            }
-            
-            stopMonitoring() {
-                if (this.monitoringInterval) {
-                    clearInterval(this.monitoringInterval);
-                }
-            }
-            
-            // Anti-cheat handlers
-            handleVisibilityChange() {
-                if (document.hidden && !this.isTerminated) {
-                    this.terminateExam('Tab switched');
-                }
-            }
-            
-            handleFullscreenChange() {
-                this.isFullscreen = !!document.fullscreenElement;
-                if (!this.isFullscreen && !this.isTerminated) {
-                    this.terminateExam('Fullscreen exited');
-                }
-            }
-            
-            handleWindowBlur() {
-                if (!this.isTerminated && document.hasFocus) {
-                    setTimeout(() => {
-                        if (!document.hasFocus() && !this.isTerminated) {
-                            this.terminateExam('Window lost focus');
-                        }
-                    }, 100);
-                }
-            }
-            
-            handleBeforeUnload(e) {
-                if (!this.isTerminated) {
-                    e.preventDefault();
-                    e.returnValue = 'Are you sure you want to leave? The exam will be terminated.';
-                    this.terminateExam('Page reload/close attempted');
-                }
-            }
-            
-            handleNavigation() {
-                if (!this.isTerminated) {
-                    history.pushState(null, null, window.location.href);
-                    this.terminateExam('Navigation attempted');
-                }
-            }
-            
-            handleKeyEvents(e) {
-                // Prevent F5, Ctrl+R, Ctrl+Shift+R, etc.
-                if (e.key === 'F5' || 
-                    (e.ctrlKey && e.key === 'r') || 
-                    (e.ctrlKey && e.shiftKey && e.key === 'R') ||
-                    e.key === 'F12') {
-                    e.preventDefault();
-                    this.terminateExam('Refresh attempted');
-                }
-                
-                // Prevent developer tools (Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C)
-                if ((e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                    e.key === 'F12) {
-                    e.preventDefault();
-                    this.terminateExam('Developer tools attempted');
-                }
-            }
-            
-            terminateExam(reason) {
-                if (this.isTerminated) return;
-                
-                this.isTerminated = true;
-                this.cheatDetected = true;
-                console.log('Exam terminated:', reason);
-                
-                // Auto-submit with current answers
-                this.submitExam(true, reason);
-            }
-            
-            submitExam(isTerminated = false, terminationReason = '') {
-                if (this.isTerminated && !isTerminated) return;
-                
-                const score = calculateScore(this.answers, this.currentPattern);
-                const status = isTerminated ? 'terminated' : 'completed';
-                
-                const attempt = {
-                    name: this.currentStudent,
-                    pattern: this.currentPattern,
-                    answers: {...this.answers},
-                    score: score,
-                    status: status,
-                    timestamp: Date.now(),
-                    terminationReason: terminationReason
-                };
-                
-                // Save attempt
-                addAttempt(attempt);
-                
-                // Clear session
-                sessionStorage.removeItem('exam_session');
-                
-                // Stop monitoring
-                this.stopMonitoring();
-                
-                // Exit fullscreen
-                this.exitFullscreen();
-                
-                // Show result
-                this.showResultScreen(status, {
-                    name: this.currentStudent,
-                    score,
-                    total: QUESTION_BANK[this.currentPattern].reduce((sum, q) => sum + q.marks, 0),
-                    pattern: this.currentPattern,
-                    reason: terminationReason
-                });
-            }
-            
-            showResultScreen(type, data) {
-                this.examScreen.classList.add('hidden');
-                this.resultScreen.classList.remove('hidden');
-                
-                switch(type) {
-                    case 'completed':
-                        this.resultIcon.innerHTML = '🎉';
-                        this.resultTitle.textContent = 'Exam Submitted Successfully!';
-                        this.resultMessage.textContent = `Thank you, ${data.name}. Your exam has been submitted.`;
-                        this.resultDetails.innerHTML = `
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-                                <div class="text-center">
-                                    <div class="text-4xl font-bold text-green-600 mb-2">${data.score}/${data.total}</div>
-                                    <p class="text-green-700">Pattern ${data.pattern} • Completed</p>
-                                </div>
-                            </div>
-                        `;
-                        break;
-                        
-                    case 'terminated':
-                        this.resultIcon.innerHTML = '⚠️';
-                        this.resultTitle.textContent = 'Exam Terminated';
-                        this.resultMessage.textContent = `Your exam was terminated due to a violation.`;
-                        this.resultDetails.innerHTML = `
-                            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold text-red-600 mb-2">Violation Detected</div>
-                                    <p class="text-red-700">${data.reason || 'Anti-cheat violation'}</p>
-                                    <p class="text-red-700 mt-2">Score: ${data.score}/${data.total}</p>
-                                    <p class="text-red-700">Status: Terminated</p>
-                                </div>
-                            </div>
-                        `;
-                        break;
-                        
-                    case 'blocked':
-                        this.resultIcon.innerHTML = '⛔';
-                        this.resultTitle.textContent = 'Attempt Blocked';
-                        this.resultMessage.textContent = data.message;
-                        this.resultDetails.innerHTML = `
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                                <div class="text-center">
-                                    <div class="text-xl font-bold text-yellow-600 mb-2">Daily Limit Reached</div>
-                                    <p class="text-yellow-700">One attempt per student per day</p>
-                                </div>
-                            </div>
-                        `;
-                        break;
-                }
-            }
-            
-            returnToHome() {
-                this.welcomeScreen.classList.remove('hidden');
-                this.examScreen.classList.add('hidden');
-                this.resultScreen.classList.add('hidden');
-                
-                // Reset form
-                this.studentForm.reset();
-                this.currentStudent = null;
-                this.currentPattern = null;
-                this.answers = {};
-                this.isTerminated = false;
-                this.cheatDetected = false;
-                
-                // Clear session
-                sessionStorage.removeItem('exam_session');
-                
-                // Stop monitoring
-                this.stopMonitoring();
-                
-                // Exit fullscreen
-                this.exitFullscreen();
-            }
-        }
-        
-        // Initialize the exam system when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new ExamSystem();
-        });
-    </script>
+    <!-- TEST -->
+    <div id="test" class="hidden">
+      <div id="questionBox"></div>
+      <button id="nextBtn" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+        Next
+      </button>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading" class="hidden text-center">
+      <p class="text-lg font-semibold text-emerald-700">Submitting answers…</p>
+      <div class="mt-4 animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto"></div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result" class="hidden text-center">
+      <h1 class="text-3xl font-bold text-emerald-700">Test Completed</h1>
+      <p id="resultText" class="mt-3"></p>
+      <button id="downloadBtn" class="mt-4 bg-emerald-600 text-white p-2 rounded">
+        Download Answers PDF
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ================= DOM ================= */
+const startDiv = document.getElementById("start");
+const testDiv = document.getElementById("test");
+const loadingDiv = document.getElementById("loading");
+const resultDiv = document.getElementById("result");
+const questionBox = document.getElementById("questionBox");
+
+const nameInput = document.getElementById("nameInput");
+const patternSelect = document.getElementById("patternSelect");
+const passwordInput = document.getElementById("passwordInput");
+
+const startBtn = document.getElementById("startBtn");
+const nextBtn = document.getElementById("nextBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const resultText = document.getElementById("resultText");
+
+/* ================= STATE ================= */
+let examStarted = false;
+let studentName = "";
+let pattern = "";
+let questions = [];
+let index = 0;
+let answers = [];
+
+/* ================= SECURITY ================= */
+function endTest(reason) {
+  if (!examStarted) return;
+  examStarted = false;
+  document.body.innerHTML = `
+    <div class="h-screen flex items-center justify-center text-center">
+      <div>
+        <h1 class="text-2xl font-bold text-red-600">Test Ended</h1>
+        <p class="mt-2">${reason}</p>
+      </div>
+    </div>`;
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (examStarted && document.hidden) endTest("You left the test");
+});
+
+window.addEventListener("blur", () => {
+  if (examStarted) endTest("Focus lost");
+});
+
+document.addEventListener("fullscreenchange", () => {
+  if (examStarted && !document.fullscreenElement)
+    endTest("Fullscreen exited");
+});
+
+document.addEventListener("copy", e => e.preventDefault());
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+/* ================= QUESTIONS ================= */
+const PASSWORDS = { A:"alpha123", B:"beta123", C:"gamma123" };
+
+const QUESTION_BANK = {
+  A:[
+    {q:"Which keyword stores constants in JavaScript?",options:["var","let","const","static"],answer:"const"},
+    {q:"Which HTML tag is used for navigation?",options:["div","nav","header","section"],answer:"nav"}
+  ],
+  B:[
+    {q:"Which CSS unit is relative to viewport width?",options:["px","em","vh","vw"],answer:"vw"},
+    {q:"Which function shows an alert box?",options:["prompt()","alert()","confirm()","log()"],answer:"alert()"}
+  ],
+  C:[
+    {q:"Which method selects an element by ID?",options:["queryAll","getElement","getElementById","selectId"],answer:"getElementById"},
+    {q:"Which tag runs JavaScript?",options:["js","script","code","javascript"],answer:"script"}
+  ]
+};
+
+/* ================= FLOW ================= */
+startBtn.onclick = () => {
+  studentName = nameInput.value.trim();
+  pattern = patternSelect.value;
+
+  if (!studentName || !pattern || PASSWORDS[pattern] !== passwordInput.value)
+    return alert("Invalid details");
+
+  examStarted = true;
+  questions = QUESTION_BANK[pattern];
+  index = 0;
+  answers = [];
+
+  document.documentElement.requestFullscreen().catch(()=>{});
+  startDiv.classList.add("hidden");
+  testDiv.classList.remove("hidden");
+  renderQuestion();
+};
+
+function renderQuestion(){
+  const q = questions[index];
+  questionBox.innerHTML =
+    `<p class="mb-4 font-semibold">${q.q}</p>` +
+    q.options.map(o =>
+      `<label class="block mb-2">
+        <input type="radio" name="ans" value="${o}"> ${o}
+      </label>`).join("");
+}
+
+nextBtn.onclick = () => {
+  const sel = document.querySelector("input[name='ans']:checked");
+  if (!sel) return alert("Select an option");
+  answers.push(sel.value);
+  index++;
+
+  if (index >= questions.length) submitExam();
+  else renderQuestion();
+};
+
+/* ================= SUBMIT ================= */
+function submitExam(){
+  examStarted = false; // 🔥 SECURITY OFF
+  document.exitFullscreen().catch(()=>{});
+
+  testDiv.classList.add("hidden");
+  loadingDiv.classList.remove("hidden");
+
+  setTimeout(showResult, 3000); // ⏳ loading delay
+}
+
+function showResult(){
+  loadingDiv.classList.add("hidden");
+  resultDiv.classList.remove("hidden");
+
+  const score = answers.filter((a,i)=>a===questions[i].answer).length;
+  resultText.textContent = `${studentName} — Score: ${score}/${questions.length}`;
+}
+
+/* ================= PDF ================= */
+downloadBtn.onclick = () => {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+  let y = 10;
+
+  pdf.text(`Name: ${studentName}`,10,y); y+=8;
+  pdf.text(`Pattern: ${pattern}`,10,y); y+=10;
+
+  questions.forEach((q,i)=>{
+    pdf.text(`Q${i+1}: ${q.q}`,10,y); y+=6;
+    pdf.text(`Your Answer: ${answers[i]}`,10,y); y+=6;
+    pdf.text(`Correct Answer: ${q.answer}`,10,y); y+=8;
+  });
+
+  pdf.save(`${studentName}_Xamplore_Result.pdf`);
+};
+</script>
+
 </body>
 </html>

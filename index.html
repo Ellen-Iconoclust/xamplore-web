@@ -139,7 +139,18 @@ body { font-family:'Poppins',sans-serif; }
 
     <div id="failed" class="hidden text-center">
       <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
-      <input id="secondPass" class="w-full p-2 mt-3 border rounded" placeholder="Second Chance Password">
+      <input
+  id="secondPass"
+  type="password"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  inputmode="none"
+  class="w-full p-2 mt-3 border rounded"
+  placeholder="Second Chance Code"
+/>
+
       <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 text-white p-2 rounded">
         Retry Exam
       </button>

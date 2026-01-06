@@ -372,23 +372,46 @@ function showResult(){
 
 /* PDF */
 function downloadPDF(){
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF();
-  let y=10;
-  const score=answers.filter((a,i)=>a===questions[i].answer).length;
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
 
-  pdf.text(`Student: ${studentName}`,10,y); y+=8;
-  pdf.text(`Pattern: ${pattern}`,10,y); y+=8;
-  pdf.text(`Score: ${score}/${questions.length}`,10,y); y+=10;
+  let y = 10;
+  const pageHeight = pdf.internal.pageSize.height;
+  const margin = 10;
 
-  questions.forEach((q,i)=>{
-    pdf.text(`Q${i+1}: ${q.q}`,10,y); y+=6;
-    pdf.text(`Answer: ${answers[i]}`,10,y); y+=6;
-    pdf.text(`Correct: ${q.answer}`,10,y); y+=8;
+  const score = answers.filter((a,i)=>a===questions[i].answer).length;
+
+  function checkPage(){
+    if (y > pageHeight - 20) {
+      pdf.addPage();
+      y = margin;
+    }
+  }
+
+  pdf.setFontSize(12);
+  pdf.text(`Student: ${studentName}`, margin, y); y += 8;
+  pdf.text(`Pattern: ${pattern}`, margin, y); y += 8;
+  pdf.text(`Score: ${score}/${questions.length}`, margin, y); y += 12;
+
+  questions.forEach((q, i) => {
+    checkPage();
+    pdf.setFont(undefined, "bold");
+    pdf.text(`Q${i + 1}: ${q.q}`, margin, y);
+    y += 6;
+
+    checkPage();
+    pdf.setFont(undefined, "normal");
+    pdf.text(`Your Answer: ${answers[i]}`, margin + 4, y);
+    y += 6;
+
+    checkPage();
+    pdf.text(`Correct Answer: ${q.answer}`, margin + 4, y);
+    y += 10;
   });
 
   pdf.save("Xamplore_Result.pdf");
 }
+
 </script>
 
 </body>

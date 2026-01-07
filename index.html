@@ -743,7 +743,9 @@ function downloadPDF(){
     y += 10;
   });
 
-  pdf.save("Xamplore_Result.pdf");
+  // Clean the filename by replacing spaces and special characters
+const cleanName = studentName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+pdf.save(`${cleanName}_xamplore_result.pdf`);
 }
 
 </script>

@@ -1,1 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Xamplore – Secure Exam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Lucide -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+* { user-select:none; -webkit-user-select:none; }
+body { font-family:'Poppins',sans-serif; overflow-x: hidden; }
+.brand { font-family:'Montserrat',sans-serif; }
+input[type="password"] { user-select: none; -webkit-user-select: none; }
+</style>
+</head>
+
+<body class="bg-white text-gray-800 min-h-screen flex flex-col">
+
+<!-- WELCOME POPUP -->
+<div id="welcomePopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+    <button onclick="closeWelcomePopup()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+      <i data-lucide="x"></i>
+    </button>
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="graduation-cap" class="text-emerald-600"></i>
+      <h3 class="text-xl font-bold text-emerald-600">Welcome to Xamplore!</h3>
+    </div>
+    <p class="text-gray-600 mb-4">
+      Ready to test your knowledge? Head over to the <span class="font-semibold text-emerald-600">Test</span> section in the menu to take secure exams.
+    </p>
+    <div class="text-sm text-gray-500">
+      <i data-lucide="info" class="inline w-4 h-4 mr-1"></i>
+      Platform Version: <span class="font-bold">Xam1.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="border-b shadow-sm sticky top-0 bg-white z-40">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2 brand text-2xl font-extrabold text-emerald-600">
+      <i data-lucide="graduation-cap"></i> Xamplore
+      <span class="text-xs font-normal bg-emerald-100 text-emerald-700 px-2 py-1 rounded">v1.0</span>
+    </div>
+
+    <div class="hidden md:flex gap-8 font-semibold">
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('test')">Test</button>
+      <button onclick="showSection('hangman')">Hangman</button>
+      <button onclick="showSection('about')">About</button>
+    </div>
+
+    <button class="md:hidden" onclick="toggleMenu()">
+      <i data-lucide="menu"></i>
+    </button>
+  </div>
+
+  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
+    <button onclick="showSection('home')" class="block">Home</button>
+    <button onclick="showSection('test')" class="block">Test</button>
+    <button onclick="showSection('hangman')" class="block">Hangman</button>
+    <button onclick="showSection('about')" class="block">About</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<section id="home" class="py-20 text-center">
+  <h1 class="text-4xl font-extrabold brand text-emerald-600">
+    Smarter Exams
+  </h1>
+  <p class="mt-3 text-xl font-semibold">Built for SRCAS Students</p>
+
+  <p class="mt-6 max-w-xl mx-auto text-gray-600">
+    Xamplore is a secure online examination platform designed to
+    reduce malpractice and ensure fair evaluation.
+  </p>
+
+  <!-- FEATURES -->
+  <div class="mt-16 max-w-5xl mx-auto grid md:grid-cols-3 gap-8 px-6">
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Secure Environment</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Fullscreen enforcement, tab monitoring, and anti-copy protections.
+      </p>
+    </div>
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Randomized Exams</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Questions and options are randomized for every student.
+      </p>
+    </div>
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Instant Reports</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Downloadable PDFs with full answer transparency.
+      </p>
+    </div>
+  </div>
+
+  <!-- WHY -->
+  <div class="mt-20 max-w-3xl mx-auto px-6">
+    <h2 class="text-2xl font-bold text-emerald-600">
+      Why Xamplore Was Created
+    </h2>
+    <p class="mt-4 text-gray-600">
+      Traditional online exams are easy to exploit. Xamplore was built
+      to provide a cleaner, stricter, and more disciplined testing
+      environment using only browser-level technologies.
+    </p>
+  </div>
+</section>
+
+<!-- TEST -->
+<section id="test" class="hidden py-16">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-xl">
+
+    <div id="login">
+      <h2 class="text-2xl font-bold mb-4 text-emerald-600">Exam Login</h2>
+      <input id="nameInput" class="w-full p-2 mb-3 border rounded" placeholder="Your Name">
+      <select id="patternSelect" class="w-full p-2 mb-3 border rounded">
+        <option value="">Select Pattern</option>
+        <option value="A">Pattern A</option>
+        <option value="B">Pattern B</option>
+        <option value="C">Pattern C</option>
+      </select>
+      <input id="passwordInput" type="password" class="w-full p-2 mb-4 border rounded" placeholder="Pattern Password">
+      <button onclick="verifyLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        Continue
+      </button>
+    </div>
+
+    <div id="rules" class="hidden">
+      <h2 class="text-xl font-bold text-emerald-600 mb-3">Rules & Regulations</h2>
+      <ul class="list-disc pl-5 text-sm space-y-2">
+        <li>No tab switching</li>
+        <li>No exiting fullscreen</li>
+        <li>No screenshots or copy</li>
+        <li>Violations end the test</li>
+      </ul>
+      <button onclick="startExam()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+        I Agree & Start Exam
+      </button>
+    </div>
+
+    <div id="exam" class="hidden">
+      <div id="questionBox"></div>
+      <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+        Next
+      </button>
+    </div>
+
+    <div id="failed" class="hidden text-center">
+      <h2 class="text-xl font-bold text-red-600">Test Failed</h2>
+      <div class="relative">
+      <input
+  id="secondPass"
+  type="password"
+  autocomplete="new-password"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  readonly
+  onfocus="this.removeAttribute('readonly'); this.setAttribute('autocomplete', 'off');"
+  class="w-full p-2 mt-3 border rounded"
+  placeholder="Second Chance Code"
+/>
+      </div>
+      <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 text-white p-2 rounded">
+        Retry Exam
+      </button>
+    </div>
+
+    <div id="result" class="hidden text-center">
+      <h2 class="text-2xl font-bold text-emerald-600">Test Completed</h2>
+      <p id="resultText" class="mt-3"></p>
+      <button onclick="downloadPDF()" class="mt-4 bg-emerald-600 text-white p-2 rounded">
+        Download PDF
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- HANGMAN GAME -->
+<section id="hangman" class="hidden py-16">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">Tech Hangman</h2>
+    
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Game Area -->
+      <div class="bg-white p-6 rounded-xl shadow-lg border">
+        <div class="text-center mb-6">
+          <div class="text-2xl font-mono mb-4" id="hangmanWordDisplay"></div>
+          <div class="text-sm text-gray-600 mb-2">Category: <span class="font-bold text-emerald-600">Computer Technology</span></div>
+          <div class="text-sm">Lives: <span id="livesCount" class="font-bold text-red-600">7</span></div>
+        </div>
+
+        <div class="mb-6">
+          <div class="flex flex-wrap gap-2 justify-center mb-4" id="letterButtons"></div>
+          <div class="text-center">
+            <button onclick="resetHangman()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+              New Game
+            </button>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <div id="hangmanMessage" class="font-semibold mb-4"></div>
+          <div id="hangmanHint" class="text-sm text-gray-600 italic"></div>
+        </div>
+      </div>
+
+      <!-- Instructions & Stats -->
+      <div class="space-y-6">
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">How to Play</h3>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li>• Guess the computer technology related word</li>
+            <li>• Click letters to make guesses</li>
+            <li>• You have 7 lives</li>
+            <li>• Incorrect guesses reduce lives</li>
+            <li>• Win by guessing all letters</li>
+          </ul>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">Game Stats</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-emerald-600" id="gamesWon">0</div>
+              <div class="text-gray-600">Games Won</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-red-600" id="gamesLost">0</div>
+              <div class="text-gray-600">Games Lost</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">Word Bank</h3>
+          <p class="text-sm text-gray-600">
+            Contains over 70+ computer technology terms including programming languages, frameworks, hardware, and software concepts.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="hidden py-20">
+  <div class="max-w-4xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">About Xamplore</h2>
+    
+    <div class="bg-white p-8 rounded-xl shadow-lg border">
+      <div class="text-center mb-6">
+        <span class="inline-block bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full font-bold text-sm">
+          Version: Xam1.0
+        </span>
+      </div>
+
+      <div class="space-y-6 text-gray-700">
+        <p>
+          <strong class="text-emerald-600">Xamplore</strong> is a comprehensive, browser-based secure examination platform developed specifically for academic institutions seeking to maintain integrity in digital assessments. Born from the need to combat widespread online examination malpractice, Xamplore employs cutting-edge browser technologies to create a controlled testing environment.
+        </p>
+
+        <div class="border-l-4 border-emerald-500 pl-4 py-2 bg-emerald-50">
+          <h3 class="font-bold text-lg text-emerald-700 mb-2">Our Mission</h3>
+          <p>
+            To revolutionize online education by providing a fair, transparent, and secure assessment platform that accurately measures student knowledge while preventing academic dishonesty through technological safeguards.
+          </p>
+        </div>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">Core Technologies</h3>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Fullscreen API Enforcement</strong>: Prevents multitasking during exams</li>
+          <li><strong>Page Visibility Detection</strong>: Monitors tab switching and background activity</li>
+          <li><strong>Randomization Algorithms</strong>: Unique question and option sequences per student</li>
+          <li><strong>Client-side PDF Generation</strong>: Instant results without server dependencies</li>
+          <li><strong>Progressive Enhancement</strong>: Works across modern browsers without plugins</li>
+        </ul>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">Academic Applications</h3>
+        <p>
+          Xamplore is particularly suited for computer science and technology courses where understanding of concepts can be effectively tested through multiple-choice questions. The platform supports various question patterns and difficulty levels, making it adaptable for courses from introductory programming to advanced web development.
+        </p>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">Future Development</h3>
+        <p>
+          The Xam1.0 release represents our foundational platform. Future versions will incorporate artificial intelligence for question generation, plagiarism detection in coding questions, and comprehensive analytics dashboards for educators. We're committed to evolving with educational technology needs.
+        </p>
+
+        <div class="bg-gray-50 p-4 rounded-lg mt-8">
+          <p class="text-sm text-gray-600">
+            <i data-lucide="shield" class="inline w-4 h-4 mr-1"></i>
+            <strong>Security Notice:</strong> Xamplore operates entirely within the browser sandbox, ensuring no student data is transmitted externally. All examination data remains on the user's device until voluntarily exported via PDF.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="mt-auto border-t py-6 text-center">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="text-sm text-gray-600">
+        <span class="inline-flex items-center">
+          <i data-lucide="copyright" class="w-4 h-4 mr-1"></i>
+          Xamplore All Rights Reserved
+        </span>
+      </div>
+      
+      <div class="text-sm text-gray-600">
+        Made by
+        <a href="https://ellen-dev.vercel.app" target="_blank"
+           class="text-emerald-600 font-semibold hover:underline">
+          Ellen Iconoclust
+        </a>
+      </div>
+      
+      <div class="text-xs text-gray-500">
+        Platform Version: <span class="font-bold">Xam1.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+lucide.createIcons();
+
+// Show welcome popup on load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    document.getElementById('welcomePopup').classList.remove('hidden');
+  }, 500);
+});
+
+function closeWelcomePopup() {
+  document.getElementById('welcomePopup').classList.add('hidden');
+}
+
+/* NAV */
+function toggleMenu(){ 
+  document.getElementById('mobileMenu').classList.toggle("hidden"); 
+}
+function showSection(id){
+  ["home","test","hangman","about"].forEach(s=>document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.getElementById('mobileMenu').classList.add("hidden");
+  if(id === 'hangman') {
+    setTimeout(initializeHangman, 100);
+  }
+}
+
+/* HANGMAN GAME DATA */
+const HANGMAN_WORDS = [
+  // Programming Languages
+  "javascript", "python", "java", "typescript", "kotlin", "swift", "ruby", "php", "go", "rust",
+  "csharp", "cpp", "c", "scala", "perl", "haskell", "lua", "r", "dart", "elixir",
+  "clojure", "erlang", "fsharp", "ocaml", "fortran", "cobol", "basic", "pascal", "ada", "lisp",
+  
+  // Frameworks & Libraries
+  "react", "angular", "vue", "django", "flask", "spring", "express", "laravel", "rails", "ember",
+  "svelte", "nextjs", "nuxt", "gatsby", "jquery", "bootstrap", "tailwind", "nodejs", "electron", "reactnative",
+  
+  // Databases
+  "mysql", "postgresql", "mongodb", "redis", "cassandra", "elasticsearch", "sqlite", "oracle", "dynamodb", "firebase",
+  
+  // Tools & Platforms
+  "docker", "kubernetes", "git", "jenkins", "ansible", "terraform", "vagrant", "grafana", "prometheus", "kibana",
+  
+  // Concepts & Terms
+  "algorithm", "blockchain", "encryption", "firewall", "virtualization", "container", "microservice", "serverless",
+  "devops", "agile", "scrum", "api", "rest", "graphql", "websocket", "machinelearning", "artificialintelligence",
+  "bigdata", "cloudcomputing", "cybersecurity", "datastructure", "debugging", "compiler", "interpreter"
+];
+
+const HANGMAN_HINTS = {
+  "javascript": "Client-side scripting language for web interactivity",
+  "python": "Popular language known for its readability and versatility",
+  "react": "Facebook's UI library for building component-based interfaces",
+  "docker": "Containerization platform for packaging applications",
+  "blockchain": "Decentralized digital ledger technology",
+  "algorithm": "Step-by-step procedure for calculations",
+  "kubernetes": "Container orchestration system for automation",
+  "typescript": "Microsoft's typed superset of JavaScript",
+  "mongodb": "NoSQL document-oriented database",
+  "devops": "Combination of development and operations practices"
+};
+
+let hangmanGame = {
+  word: "",
+  display: [],
+  guessed: [],
+  lives: 7,
+  gamesWon: 0,
+  gamesLost: 0,
+  gameActive: false
+};
+
+function initializeHangman() {
+  if (!hangmanGame.gameActive) {
+    startNewHangmanGame();
+  }
+}
+
+function startNewHangmanGame() {
+  // Select random word
+  hangmanGame.word = HANGMAN_WORDS[Math.floor(Math.random() * HANGMAN_WORDS.length)];
+  hangmanGame.display = hangmanGame.word.split('').map(() => '_');
+  hangmanGame.guessed = [];
+  hangmanGame.lives = 7;
+  hangmanGame.gameActive = true;
+  
+  updateHangmanDisplay();
+  createLetterButtons();
+  updateHangmanMessage("");
+  updateHint();
+  
+  // Update stats display
+  document.getElementById('gamesWon').textContent = hangmanGame.gamesWon;
+  document.getElementById('gamesLost').textContent = hangmanGame.gamesLost;
+  document.getElementById('livesCount').textContent = hangmanGame.lives;
+}
+
+function updateHangmanDisplay() {
+  document.getElementById('hangmanWordDisplay').textContent = hangmanGame.display.join(' ');
+}
+
+function createLetterButtons() {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const container = document.getElementById('letterButtons');
+  container.innerHTML = '';
+  
+  letters.split('').forEach(letter => {
+    const button = document.createElement('button');
+    button.textContent = letter.toUpperCase();
+    button.className = 'w-10 h-10 rounded-lg border hover:bg-emerald-50 transition ' + 
+      (hangmanGame.guessed.includes(letter) ? 'bg-gray-200 cursor-not-allowed' : 'bg-white');
+    button.disabled = hangmanGame.guessed.includes(letter);
+    button.onclick = () => guessLetter(letter);
+    container.appendChild(button);
+  });
+}
+
+function guessLetter(letter) {
+  if (!hangmanGame.gameActive || hangmanGame.guessed.includes(letter)) return;
+  
+  hangmanGame.guessed.push(letter);
+  
+  if (hangmanGame.word.includes(letter)) {
+    // Correct guess
+    hangmanGame.word.split('').forEach((char, index) => {
+      if (char === letter) {
+        hangmanGame.display[index] = letter;
+      }
+    });
+    updateHangmanMessage(`Good guess! "${letter.toUpperCase()}" is in the word.`);
+  } else {
+    // Wrong guess
+    hangmanGame.lives--;
+    updateHangmanMessage(`Wrong guess! "${letter.toUpperCase()}" is not in the word. Lives remaining: ${hangmanGame.lives}`);
+  }
+  
+  updateHangmanDisplay();
+  createLetterButtons();
+  document.getElementById('livesCount').textContent = hangmanGame.lives;
+  
+  checkGameStatus();
+}
+
+function checkGameStatus() {
+  if (!hangmanGame.display.includes('_')) {
+    // Win
+    hangmanGame.gameActive = false;
+    hangmanGame.gamesWon++;
+    updateHangmanMessage(`Congratulations! You guessed the word: ${hangmanGame.word.toUpperCase()}`);
+    document.getElementById('gamesWon').textContent = hangmanGame.gamesWon;
+  } else if (hangmanGame.lives <= 0) {
+    // Lose
+    hangmanGame.gameActive = false;
+    hangmanGame.gamesLost++;
+    updateHangmanMessage(`Game Over! The word was: ${hangmanGame.word.toUpperCase()}`);
+    document.getElementById('gamesLost').textContent = hangmanGame.gamesLost;
+    // Reveal the word
+    hangmanGame.display = hangmanGame.word.split('');
+    updateHangmanDisplay();
+  }
+}
+
+function updateHangmanMessage(message) {
+  document.getElementById('hangmanMessage').textContent = message;
+  document.getElementById('hangmanMessage').className = 'font-semibold mb-4 ' + 
+    (message.includes('Congratulations') ? 'text-emerald-600' : 
+     message.includes('Game Over') ? 'text-red-600' : 'text-gray-700');
+}
+
+function updateHint() {
+  const hint = HANGMAN_HINTS[hangmanGame.word] || "Computer technology related term";
+  document.getElementById('hangmanHint').textContent = `Hint: ${hint}`;
+}
+
+function resetHangman() {
+  startNewHangmanGame();
+}
+
+/* DATA */
+const PASSWORDS={A:"alpha123",B:"beta123",C:"gamma123"};
+const SECOND_PASS="choice2ellen";
+
+const QUESTION_BANK = {
+  A: [
+    { q: "Which JavaScript declaration keyword binds an immutable identifier?", options: ["var", "let", "const", "static"], answer: "const" },
+    { q: "Which semantic HTML element represents a site-level link grouping?", options: ["section", "menu", "nav", "header"], answer: "nav" },
+    { q: "Which CSS property affects internal spacing of a box model?", options: ["margin", "gap", "padding", "outline"], answer: "padding" },
+    { q: "Which Canvas API function renders bitmap data onto the surface?", options: ["paintImage()", "renderImg()", "drawImage()", "putImage()"], answer: "drawImage()" },
+    { q: "Which JavaScript built-in function invokes a modal dialog?", options: ["console.log()", "prompt()", "alert()", "confirm()"], answer: "alert()" },
+    { q: "Which HTML attribute enforces user input before submission?", options: ["validate", "compulsory", "required", "checked"], answer: "required" },
+    { q: "Which CSS unit scales relative to viewport horizontal size?", options: ["vh", "em", "vw", "%"], answer: "vw" },
+    { q: "Which Canvas method resets pixels within a defined region?", options: ["resetRect()", "eraseRect()", "clearRect()", "wipeRect()"], answer: "clearRect()" },
+    { q: "Which semantic HTML element encapsulates primary document content?", options: ["body", "article", "main", "section"], answer: "main" },
+    { q: "Which HTML element inserts a thematic break?", options: ["br", "hr", "line", "rule"], answer: "hr" },
+
+    { q: "Which CSS property determines vertical layering priority?", options: ["depth", "overlay", "z-index", "stack"], answer: "z-index" },
+    { q: "Which HTML element embeds raster graphics?", options: ["picture", "media", "image", "img"], answer: "img" },
+    { q: "Which Canvas rendering property controls fill pigment?", options: ["fillColor", "fillStyle", "colorFill", "background"], answer: "fillStyle" },
+    { q: "Which JavaScript control keyword terminates iteration execution?", options: ["exit", "stop", "break", "halt"], answer: "break" },
+    { q: "Which CSS property modifies corner curvature?", options: ["curve", "border-edge", "border-radius", "outline-radius"], answer: "border-radius" },
+    { q: "Which HTML element constructs a bullet-based list?", options: ["li", "ul", "ol", "dl"], answer: "ul" },
+    { q: "Which JavaScript keyword initializes a scoped identifier?", options: ["define", "var", "let", "set"], answer: "let" },
+    { q: "Which Canvas method preserves the current context snapshot?", options: ["hold()", "cache()", "save()", "store()"], answer: "save()" },
+    { q: "Which CSS layout model aligns items horizontally by default?", options: ["grid", "inline", "flex", "block"], answer: "flex" },
+    { q: "Which character encoding declaration avoids symbol distortion?", options: ["ASCII", "UTF-18", "UTF-8", "UTF-16"], answer: "UTF-8" },
+
+    { q: "Which JavaScript structure maintains indexed collections?", options: ["object", "array", "map", "set"], answer: "array" },
+    { q: "Which CSS concept adapts layout across device sizes?", options: ["scaling", "responsiveness", "transitions", "alignment"], answer: "responsiveness" },
+    { q: "Which JavaScript method retrieves an element via unique identifier?", options: ["getelementById()", "getelementsByClassName()", "getElementById()", "getElementbyId()"], answer: "getElementById()" },
+    { q: "Which Canvas API function renders text glyphs?", options: ["drawText()", "fillText()", "writeText()", "textDraw()"], answer: "fillText()" },
+    { q: "Which JavaScript primitive represents intentional absence?", options: ["null", "undefined", "NaN", "false"], answer: "null" },
+    { q: "Which CSS property clips excess visual content?", options: ["hidden", "clip", "overflow", "mask"], answer: "overflow" },
+    { q: "Which document declaration activates compliance rendering?", options: ["‹html›", "‹meta›", "‹!DOCTYPE html›", "‹head›"], answer: "‹!DOCTYPE html›" },
+    { q: "Which HTML element triggers user interaction events?", options: ["input", "button", "submit", "click"], answer: "button" },
+    { q: "Which Canvas function restores the last stored context?", options: ["load()", "undo()", "restore()", "recall()"], answer: "restore()" },
+    { q: "Which CSS selector references a unique element?", options: [".class", "elementId", "#id", "*"], answer: "#id" }
+  ],
+
+  B: [
+    { q: "Which HTML element defines a clickable control?", options: ["action", "submit", "button", "input"], answer: "button" },
+    { q: "Which JavaScript operator inverses logical evaluation?", options: ["!=", "!", "!==", "not"], answer: "!" },
+    { q: "Which Canvas interface exposes rendering methods?", options: ["CanvasObject", "CanvasAPI", "CanvasRenderingContext2D", "GraphicsContext"], answer: "CanvasRenderingContext2D" },
+    { q: "Which CSS property horizontally aligns inline text?", options: ["align", "justify", "text-align", "text-position"], answer: "text-align" },
+    { q: "Which semantic HTML tag contains supplementary content?", options: ["aside", "section", "article", "nav"], answer: "aside" },
+    { q: "Which HTML element defines last page content?", options: ["end", "footer", "bottom", "end-content"], answer: "footer" },
+    { q: "Which CSS property repositions elements visually?", options: ["float", "transform", "margin", "display"], answer: "transform" },
+    { q: "Which CSS property modifies font texture intensity?", options: ["font-style", "text-weight", "font-weight", "letter-spacing"], answer: "font-weight" },
+    { q: "Which HTML attribute opens hyperlinks externally?", options: ["new", "target", "href", "rel"], answer: "target" },
+    { q: "Which JavaScript keyword declares executable blocks?", options: ["method", "function", "def", "exec"], answer: "function" },
+
+    { q: "Which CSS property controls outer spacing?", options: ["padding", "border", "margin", "gap"], answer: "margin" },
+    { q: "Which JavaScript method locates elements by ID?", options: ["getelementsByClassName()", "getElementById()", "getElementbyId()", "getelementbyId()"], answer: "getElementById()" },
+    { q: "Which Canvas property determines the line's stroke pigment?", options: ["strokeColor", "lineColor", "strokeStyle", "borderColor"], answer: "strokeStyle" },
+    { q: "Which Canvas method initializes a drawing path?", options: ["begin()", "startPath()", "beginPath()", "openPath()"], answer: "beginPath()" },
+    { q: "Which CSS unit inherits relative font sizing?", options: ["px", "rem", "em", "vh"], answer: "em" },
+    { q: "Which CSS property controls opacity levels?", options: ["visibility", "transparency", "opacity", "filter"], answer: "opacity" },
+    { q: "Which JavaScript keyword terminates function execution?", options: ["end", "stop", "return", "break"], answer: "return" },
+    { q: "Which Canvas method creates line segments?", options: ["line()", "drawLine()", "lineTo()", "strokeLine()"], answer: "lineTo()" },
+    { q: "Which CSS display value removes elements entirely?", options: ["hidden", "none", "invisible", "collapse"], answer: "none" },
+    { q: "Which HTML utility validates syntax correctness?", options: ["Browser", "Inspector", "Validator", "Compiler"], answer: "Validator" },
+
+    { q: "Which JavaScript data type stores characters?", options: ["char", "text", "string", "varchar"], answer: "string" },
+    { q: "Which CSS property aligns items along cross-axis?", options: ["justify-content", "align-content", "align-items", "place-items"], answer: "align-items" },
+    { q: "Which HTML attribute displays hint text in inputs?", options: ["label", "hint", "placeholder", "value"], answer: "placeholder" },
+    { q: "Which HTML element produces numbered lists?", options: ["ul", "dl", "li", "ol"], answer: "ol" },
+    { q: "Which Canvas property defines stroke thickness?", options: ["borderWidth", "strokeSize", "lineWidth", "penWidth"], answer: "lineWidth" },
+    { q: "Which CSS property defines layout reference model?", options: ["position", "display", "float", "align"], answer: "position" },
+    { q: "Which Canvas method reverts saved drawing state?", options: ["undo()", "restore()", "reload()", "reverse()"], answer: "restore()" },
+    { q: "Which HTML element groups form controls?", options: ["group", "fieldset", "formset", "legend"], answer: "fieldset" },
+    { q: "Which CSS rule enables animated transitions?", options: ["animation", "transition", "transform", "interpolate"], answer: "transition" },
+    { q: "Which CSS property alters cursor appearance?", options: ["pointer", "arrow", "cursor", "mouse"], answer: "cursor" }
+  ],
+
+  C: [
+    { q: "Which HTML element provides a drawable region?", options: ["draw", "paint", "canvas", "surface"], answer: "canvas" },
+    { q: "Which HTML element encapsulates metadata?", options: ["body", "meta", "head", "title"], answer: "head" },
+    { q: "Which Canvas method seals the current path?", options: ["endPath()", "closePath()", "finishPath()", "stopPath()"], answer: "closePath()" },
+    { q: "Which CSS property assigns background pigment?", options: ["background-style", "background-color", "color", "fill"], answer: "background-color" },
+    { q: "Which CSS property defines typeface grouping?", options: ["font", "font-style", "font-family", "typeface"], answer: "font-family" },
+    { q: "Which Canvas method erases a defined pixel region?", options: ["deleteRect()", "wipeRect()", "clearRect()", "removeRect()"], answer: "clearRect()" },
+    { q: "Which Canvas method draws semi-circles and circles?", options: ["curve()", "arc()", "circle()", "round()"], answer: "arc()" },
+    { q: "Which CSS property controls animation timing length?", options: ["animation-speed", "animation-duration", "transition-time", "animation-delay"], answer: "animation-duration" },
+    { q: "Which HTML element represents the highest heading?", options: ["h6", "heading", "h1", "header"], answer: "h1" },
+    { q: "Which JavaScript operator checks strict inequality?", options: ["!=", "!!=", "!==", "!==="], answer: "!==" },
+
+    { q: "Which Canvas method stores rendering state?", options: ["save()", "cache()", "hold()", "keep()"], answer: "save()" },
+    { q: "Which HTML element generates selection menus?", options: ["option", "dropdown", "select", "menu"], answer: "select" },
+    { q: "Which HTML element embeds external pages?", options: ["embed", "iframe", "frame", "object"], answer: "iframe" },
+    { q: "Which Canvas method draws a line to coordinates?", options: ["drawTo()", "moveTo()", "lineTo()", "pathTo()"], answer: "lineTo()" },
+    { q: "Which Canvas method renders textual output?", options: ["text()", "fillText()", "printText()", "drawFont()"], answer: "fillText()" },
+    { q: "Which CSS property hides content but preserves layout space?", options: ["display", "opacity", "visibility", "hidden"], answer: "visibility" },
+    { q: "Which HTML attribute disables input controls?", options: ["readonly", "inactive", "disabled", "locked"], answer: "disabled" },
+    { q: "Which JavaScript keyword defines immutable variables?", options: ["let", "var", "const", "static"], answer: "const" },
+    { q: "Which Canvas property controls alpha transparency?", options: ["opacity", "alpha", "globalAlpha", "transparency"], answer: "globalAlpha" },
+    { q: "Which CSS property spaces flex children evenly?", options: ["align-items", "gap-content", "justify-content", "place-content"], answer: "justify-content" },
+
+    { q: "Which HTML element directly creates user data entry controls?", options: ["form", "textarea", "input", "field"], answer: "input" },
+    { q: "Which JavaScript function converts strings to numbers?", options: ["Number()", "parseInt()", "toNum()", "convert(num)"], answer: "parseInt()" },
+    { q: "Which CSS property alters text casing?", options: ["font-style", "text-transform", "letter-spacing", "word-break"], answer: "text-transform" },
+    { q: "Which HTML attribute controls image loading behavior?", options: ["async", "lazy", "loading", "defer"], answer: "loading" },
+    { q: "Which HTML attribute assign initial cursor focus with scripting for an input?", options: ["focus", "selected", "autofocus", "active"], answer: "autofocus" },
+    { q: "Which CSS property positions background imagery?", options: ["background-align", "background-origin", "background-position", "background-place"], answer: "background-position" },
+    { q: "Which JavaScript operator checks loose equality?", options: ["===", "=", "==", "!=="], answer: "==" },
+    { q: "Which DOM method retrieves an element by ID?", options: ["getelementbyId()", "getElementById()", "getElementbyId()", "getelementById()"], answer: "getElementById()" },
+    { q: "Which HTML element represents keyboard input?", options: ["kbdIn", "keyboard-input", "kbd", "input-key"], answer: "kbd" },
+    { q: "Which CSS property fits images within containers?", options: ["object-position", "image-fit", "object-fit", "background-size"], answer: "object-fit" }
+  ]
+};
+
+/* STATE */
+let studentName,pattern,questions,index=0,answers=[],examStarted=false;
+
+/* LOGIN */
+function verifyLogin(){
+  studentName=nameInput.value.trim();
+  pattern=patternSelect.value;
+  if(!studentName||!pattern||PASSWORDS[pattern]!==passwordInput.value)
+    return alert("Invalid details");
+  login.classList.add("hidden");
+  rules.classList.remove("hidden");
+}
+
+/* START */
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+function startExam(){
+  rules.classList.add("hidden");
+  exam.classList.remove("hidden");
+  examStarted=true;
+  index=0;
+  answers=[];
+  questions=shuffle([...QUESTION_BANK[pattern]])
+    .map(q=>({...q,options:shuffle([...q.options])}));
+  document.documentElement.requestFullscreen().catch(()=>{});
+  renderQuestion();
+}
+
+/* SECURITY */
+function failTest(){
+  examStarted=false;
+  document.exitFullscreen().catch(()=>{});
+  exam.classList.add("hidden");
+  failed.classList.remove("hidden");
+}
+document.addEventListener("visibilitychange",()=>examStarted&&document.hidden&&failTest());
+window.addEventListener("blur",()=>examStarted&&failTest());
+document.addEventListener("fullscreenchange",()=>examStarted&&!document.fullscreenElement&&failTest());
+
+/* QUESTIONS */
+function renderQuestion(){
+  const q=questions[index];
+  questionBox.innerHTML=
+    `<p class="font-semibold mb-3">${q.q}</p>`+
+    q.options.map(o=>`
+      <label class="block mb-2">
+        <input type="radio" name="ans" value="${o}"> ${o}
+      </label>`).join("");
+}
+function nextQuestion(){
+  const sel=document.querySelector("input[name='ans']:checked");
+  if(!sel) return alert("Select an option");
+  answers.push(sel.value);
+  index++;
+  index>=questions.length?showResult():renderQuestion();
+}
+
+/* SECOND */
+function secondChance(){
+  if(secondPass.value!==SECOND_PASS) return alert("Wrong password");
+  location.reload();
+}
+
+/* RESULT */
+function showResult(){
+  examStarted=false;
+  document.exitFullscreen().catch(()=>{});
+  exam.classList.add("hidden");
+  result.classList.remove("hidden");
+  const score=answers.filter((a,i)=>a===questions[i].answer).length;
+  resultText.textContent=
+    `${studentName} — Score ${score}/${questions.length}`;
+}
+
+/* PDF */
+function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  let y = 10;
+  const pageHeight = pdf.internal.pageSize.height;
+  const margin = 10;
+
+  const score = answers.filter((a,i)=>a===questions[i].answer).length;
+
+  function checkPage(){
+    if (y > pageHeight - 20) {
+      pdf.addPage();
+      y = margin;
+    }
+  }
+
+  pdf.setFontSize(12);
+  pdf.text(`Student: ${studentName}`, margin, y); y += 8;
+  pdf.text(`Pattern: ${pattern}`, margin, y); y += 8;
+  pdf.text(`Score: ${score}/${questions.length}`, margin, y); y += 12;
+
+  questions.forEach((q, i) => {
+    checkPage();
+    pdf.setFont(undefined, "bold");
+    pdf.text(`Q${i + 1}: ${q.q}`, margin, y);
+    y += 6;
+
+    checkPage();
+    pdf.setFont(undefined, "normal");
+    pdf.text(`Your Answer: ${answers[i]}`, margin + 4, y);
+    y += 6;
+
+    checkPage();
+    pdf.text(`Correct Answer: ${q.answer}`, margin + 4, y);
+    y += 10;
+  });
+
+  // Clean the filename by replacing spaces and special characters
+const cleanName = studentName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+pdf.save(`${cleanName}_xamplore_result.pdf`);
+}
+
+</script>
+
+</body>
+</html>
